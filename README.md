@@ -3,10 +3,14 @@
 ## Configure the enviroment
 
 Check your python version (3.10.7 recommended)
-```$ python --version```
+```
+    $ python --version
+```
 
 Create a virtual enviroment
-```$ python -m venv venv```
+```
+    $ python -m venv venv
+```
 
 You must activate your virtual enviroment in order to install dependencies. VScode detecs the venv located at root. If you are using windows you may need to allow unsigned script execution in powershell.
 ```
@@ -16,7 +20,9 @@ You must activate your virtual enviroment in order to install dependencies. VSco
 ```
 
 When you activate your venv, you can install project dependencies by using
-```$ pip install -r requirements.txt```
+```
+    $ pip install -r requirements.txt
+```
 
 ## Django useful commands
 
@@ -27,4 +33,11 @@ Setup database
 ```
 
 Run development server
-``` $ ./manage.py runserver```
+```
+    $ ./manage.py runserver
+```
+
+Create super user
+```
+    $ ./manage.py createsuperuser
+```
