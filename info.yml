@@ -1,5 +1,5 @@
 project:
-  name: backend-aiding
+  name: Desarrollo
   owner: ISPP-2023-NGO-P3
   teamId: '6'
   identities: {}
@@ -8,45 +8,60 @@ project:
     member1:
       name: 'Juan José'
       surname: 'Álvarez Campanón'
+      githubUsername: 'juaalvcam'
     member2:
       name: Carlos
       surname: 'Delgado Becerril'
+      githubUsername: 'cardelbec'
     member3:
       name: 'José María'
       surname: 'Delgado Sánchez'
+      githubUsername: 'Josdelsan'
     member4:
       name: Manuel
       surname: 'Domínguez Magdaleno'
+      githubUsername: 'Manueldm01'
     member5:
       name: Celia
       surname: 'Hermoso Soto'
+      githubUsername: 'celhersot'
     member6:
       name: Noelia
       surname: 'López Durán'
+      githubUsername: 'lNoelia'
     member7:
       name: 'Rosa María'
       surname: 'Molina Arregui'
+      githubUsername: 'rosmolarr'
     member8:
       name: Ricardo
       surname: 'Nadal García'
+      githubUsername: 'Rick3600'
     member9:
       name: Marcos
       surname: 'Olmedo Marín'
+      githubUsername: 'marolmmar1'
     member10:
       name: 'Aisha Doris'
       surname: 'Qazza Cevallos'
+      githubUsername: 'aisqazcev'
     member11:
       name: Nicolás
       surname: 'Sánchez Mendoza'
+      githubUsername: 'nicsanmen'
     member12:
       name: Manuel
       surname: 'Sánchez Rodríguez'
+      githubUsername: 'mansanrod4'
     member13:
       name: Rubén
       surname: 'Suarez David'
+      githubUsername: 'rubsuadav'
     member14:
       name: Oliva
       surname: 'Sánchez Rodríguez'
+      githubUsername: 'olisanrod'
     member15:
       name: Marina
       surname: 'Ramiro Fernández'
+      githubUsername: 'marinaramirofde'
