@@ -1,0 +1,52 @@
+project:
+  name: backend-aiding
+  owner: ISPP-2023-NGO-P3
+  teamId: '6'
+  identities: {}
+  notifications: {}
+  members:
+    member1:
+      name: 'Juan José'
+      surname: 'Álvarez Campanón'
+    member2:
+      name: Carlos
+      surname: 'Delgado Becerril'
+    member3:
+      name: 'José María'
+      surname: 'Delgado Sánchez'
+    member4:
+      name: Manuel
+      surname: 'Domínguez Magdaleno'
+    member5:
+      name: Celia
+      surname: 'Hermoso Soto'
+    member6:
+      name: Noelia
+      surname: 'López Durán'
+    member7:
+      name: 'Rosa María'
+      surname: 'Molina Arregui'
+    member8:
+      name: Ricardo
+      surname: 'Nadal García'
+    member9:
+      name: Marcos
+      surname: 'Olmedo Marín'
+    member10:
+      name: 'Aisha Doris'
+      surname: 'Qazza Cevallos'
+    member11:
+      name: Nicolás
+      surname: 'Sánchez Mendoza'
+    member12:
+      name: Manuel
+      surname: 'Sánchez Rodríguez'
+    member13:
+      name: Rubén
+      surname: 'Suarez David'
+    member14:
+      name: Oliva
+      surname: 'Sánchez Rodríguez'
+    member15:
+      name: Marina
+      surname: 'Ramiro Fernández'
