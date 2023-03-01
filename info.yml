@@ -1,7 +1,7 @@
 project:
-  name: Desarrollo
-  owner: ISPP-2023-NGO-P3
-  teamId: '6'
+  name: ISPP-2023
+  owner: ISPP
+  teamId: L6
   identities: {}
   notifications: {}
   members:
