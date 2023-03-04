@@ -48,6 +48,13 @@ class PartnerManagement(View):
         if len(partners) > 0:
             partner = Partners.objects.get(id=id)
             partner.name = jd['name']
+            partner.last_name=jd['last_name']
+            partner.dni=jd['dni']
+            partner.phone=jd['phone']
+            partner.email=jd['email']
+            partner.province=jd['province']
+            partner.iban=jd['iban']
+            partner.state=jd['state']
             partner.save()
             datos = {'message': "Success"}
         else:
