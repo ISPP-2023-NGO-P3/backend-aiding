@@ -2,12 +2,22 @@ from datetime import date, timedelta, timezone
 from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
-
-
 from enum import Enum
 
-class Partner(models.Model):
-    name = models.CharField(max_length=100)
+class Partners(models.Model):
+    STATE_CHOICES = (
+        ('ALTA', 'alta'),
+        ('BAJA', 'baja'),
+    )
+
+    name = models.CharField(max_length=100, blank=False)
+    last_name = models.CharField(max_length=100, blank=False)
+    dni = models.CharField(max_length=9, unique=True, blank=False)
+    phone = models.CharField(max_length=15, unique=True, blank=False)
+    email = models.EmailField(unique=True, blank=False)
+    province = models.CharField(max_length=50, blank=False)
+    iban = models.CharField(max_length=34, unique=True, blank=False)
+    state = models.CharField(max_length=4, choices=STATE_CHOICES, default='alta')
 
 
 class DonationType(Enum):
@@ -25,7 +35,7 @@ class DonationPeriodicity(Enum):
         return self.value['days']
 
 class Donation(models.Model):
-    partner = models.ForeignKey(Partner, on_delete = models.CASCADE, related_name='donation')
+    partner = models.ForeignKey(Partners, on_delete = models.CASCADE, related_name='donation')
     date = models.DateField()
     donation_type = models.CharField(choices=[(t, t.value) for t in DonationType], max_length=20)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
@@ -57,4 +67,7 @@ class Donation(models.Model):
 
             self.total_donation = total_donation
             self.save(update_fields=['total_donation'])    
+
+
+
 

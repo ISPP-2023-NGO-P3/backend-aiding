@@ -1,12 +1,77 @@
+
 from datetime import datetime
 import json
 from django.shortcuts import render
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+import json
+from django.http.response import JsonResponse
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from .models import *
+from django.db import IntegrityError
 
 from django.http.response import JsonResponse
-from .models import Partner, Donation, DonationType, DonationPeriodicity
+from .models import Partners, Donation
+
+class PartnerManagement(View):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request, id = 0):
+        if (id > 0):
+            partners = list(Partners.objects.filter(id=id).values())
+            if len(partners) > 0:
+                partners = partners[0]
+                datos = {'partners': partners}
+            else:
+                datos = {'message': "partner not found..."}
+            return JsonResponse(partners, safe = False)
+        else:
+
+            partners = list(Partners.objects.values())
+            if len(partners) > 0:
+                datos = {'partners': partners}
+            else:
+                datos = {'message': "partners not found..."}
+            return JsonResponse(partners, safe = False)
+
+    def post(self, request):
+        jd = json.loads(request.body)
+
+        try:
+            Partners.objects.create(name=jd['name'], last_name=jd['last_name'], 
+            dni=jd['dni'], phone=jd['phone'], email=jd['email'], province=jd['province'],
+            iban=jd['iban'], state=jd['state'])
+            datos = {'message': "Success"}
+            return JsonResponse(datos)
+        except IntegrityError:
+            error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
+            return JsonResponse(error)
+
+    def put(self, request, id):
+        jd = json.loads(request.body)
+        partners = list(Partners.objects.filter(id=id).values())
+        if len(partners) > 0:
+            partner = Partners.objects.get(id=id)
+            partner.name = jd['name']
+            partner.last_name=jd['last_name']
+            partner.dni=jd['dni']
+            partner.phone=jd['phone']
+            partner.email=jd['email']
+            partner.province=jd['province']
+            partner.iban=jd['iban']
+            partner.state=jd['state']
+            partner.save()
+            datos = {'message': "Success"}
+        else:
+            datos = {'message': "Partner not found..."}
+        return JsonResponse(datos)
+    
+
 
 class DonationView(View):
 
@@ -33,7 +98,7 @@ class DonationView(View):
         
     def post(self, request):
         jd = json.loads(request.body)
-        part = Partner.objects.filter(id = jd['partner_id'])
+        part = Partners.objects.filter(id = jd['partner_id'])
         if len(part) > 0:
             date_str = jd['date']
             date = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -47,14 +112,14 @@ class DonationView(View):
             datos = {'message': "Success"}
         else:
 
-            datos = {'message': "Advertisements not found"}
+            datos = {'message': "Donation not found"}
         return JsonResponse(datos)
     
     def put(self, request, id):
         jd = json.loads(request.body)
         donations = list(Donation.objects.filter(id=id).values())
         if len(donations) > 0:
-            partner =Partner.objects.filter(id = jd['partner_id'])
+            partner =Partners.objects.filter(id = jd['partner_id'])
             partner = partner[0]
             donation = Donation.objects.get(id=id)
             donation.partner = partner
@@ -65,51 +130,4 @@ class DonationView(View):
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
 
-class PartnerView(View):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id = 0):
-        if (id > 0):
-            partners = list(Partner.objects.filter(id=id).values())
-            if len(partners) > 0:
-                partners = partners[0]
-                datos = {'partners': partners}
-            else:
-                datos = {'message': "partner not found..."}
-            return JsonResponse(partners, safe = False)
-        else:
-            partners = list(Partner.objects.values())
-            if len(partners) > 0:
-                datos = {'partners': partners}
-            else:
-                datos = {'message': "partners not found..."}
-            return JsonResponse(partners, safe = False)
-
-    def post(self, request):
-        jd = json.loads(request.body)
-        Partner.objects.create(name=jd['name'])
-        data = {'message': 'Success'}
-        return JsonResponse(data)
-
-    def put(self, request, id):
-        name = request.POST.get('name', '')
-        partners = list(Partner.objects.filter(id=id).values())
-        if len(partners) > 0:
-            partner = Partner.objects.get(id=id)
-            partner.name = name
-            partner.save()
-            data = {'message': 'Success'}
-        else:
-            data = {'message': 'Partner not found...'}
-        return JsonResponse(data)
-
-    def delete(self, request, id):
-        partners = list(Partner.objects.filter(id=id).values())
-        if len(partners) > 0:
-            Partner.objects.filter(id=id).delete()
-            data = {'message': 'Success'}
-        else:
-            data = {'message': 'Partner not found...'}
-        return JsonResponse(data)
