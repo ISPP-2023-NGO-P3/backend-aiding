@@ -3,15 +3,21 @@ from django.db import models
 from enum import Enum
 
 # Create your models here.
-class ComunicationType(Enum):
+class Partner(models.Model):
+    name = models.CharField(max_length=100)
+
+class CommunicationType(Enum):
     TELEFONICA = 'TELEFÓNICA'
     TELEMATICA = 'TELEMÁTICA'
     PERSONAL = 'PERSONAL'
     EMAIL = 'EMAIL'
 
-class Comunication(models.Model):
+class Communication(models.Model):
+    partner = models.ForeignKey(Partner, on_delete= models.CASCADE, related_name='communication')
     date = models.DateField(null = False)
-    comunication_type = models.CharField(
-        choices=[(t, t.value) for t in ComunicationType],
+    communication_type = models.CharField(
+        choices=[(t, t.value) for t in CommunicationType],
         max_length=20,
         null=False)
+    
+    
