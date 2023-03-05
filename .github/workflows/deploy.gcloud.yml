@@ -14,8 +14,8 @@ jobs:
     - name: Install settings
       run: |
         cp aiding/deploy_settings.py aiding/local_settings.py
-        echo ${{ secrets.ROOT_PASSWORD }} >> .env
-        echo ${{ secrets.DATABASE_URL }} >> .env 
+        echo "${{ secrets.ROOT_PASSWORD }}" >> .env
+        echo "${{ secrets.DATABASE_URL }}" >> .env 
 
     - id: auth
       name: Authenticate to Google Cloud
