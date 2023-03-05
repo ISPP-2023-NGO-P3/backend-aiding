@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from django.shortcuts import render
 from django.views import View
@@ -34,7 +35,8 @@ class DonationView(View):
         jd = json.loads(request.body)
         part = Partner.objects.filter(id = jd['partner_id'])
         if len(part) > 0:
-            date = jd['date']
+            date_str = jd['date']
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
             donation_type = jd['donation_type']
             amount = jd['amount']
             periodicity = jd['periodicity']
@@ -49,16 +51,13 @@ class DonationView(View):
         return JsonResponse(datos)
     
     def put(self, request, id):
-        jd = request.POST
+        jd = json.loads(request.body)
         donations = list(Donation.objects.filter(id=id).values())
         if len(donations) > 0:
             partner =Partner.objects.filter(id = jd['partner_id'])
             partner = partner[0]
             donation = Donation.objects.get(id=id)
             donation.partner = partner
-            donation.date = jd['date']
-            donation.donation_type = jd['donation_type']
-            donation.amount = jd['amount']
             donation.periodicity = jd['periodicity']
             donation.save()
             datos = {'message': "Success"}
