@@ -1,10 +1,6 @@
 name: Deploy gcloud
 
-on:
-  push:
-    branches:
-      - main
-
+on: push
 jobs:
   deploy:
     name: Deploying to Google Cloud
@@ -13,6 +9,11 @@ jobs:
     steps:
     - name: Local config
       uses: action/checkout@v2
+
+     - name: Install settings
+      run: |
+        cp aiding/deploy_settings.py aiding/local_settings.py
+        echo ${{ secret.LOCAL_CONFIG }} >> .env 
 
     - id: auth
       name: Authenticate to Google Cloud
