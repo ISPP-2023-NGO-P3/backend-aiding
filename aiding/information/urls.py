@@ -9,6 +9,6 @@ urlpatterns = [
     path('advertisements/<int:id>',AdvertisementView.as_view()),
 
     path('multimedias/', MultimediaView.as_view()),
-    path('multimedias/<int:id>',MultimediaView.as_view(), name="v2"),
+    path('multimedias/<int:id>',MultimediaView.as_view()),
 
 ]
