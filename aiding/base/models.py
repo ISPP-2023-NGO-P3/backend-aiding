@@ -6,7 +6,6 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import *
 import json
 
-# Create your views here.
 
 class UserView(View):
     @method_decorator(csrf_exempt)
