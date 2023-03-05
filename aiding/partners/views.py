@@ -98,22 +98,27 @@ class DonationView(View):
         
     def post(self, request):
         jd = json.loads(request.body)
-        part = Partners.objects.filter(id = jd['partner_id'])
-        if len(part) > 0:
-            date_str = jd['date']
-            date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            donation_type = jd['donation_type']
-            amount = jd['amount']
-            periodicity = jd['periodicity']
-            part = part[0]
+        partner_id = jd['partner_id']
+        donation_type = jd['donation_type']
+        amount = jd['amount']
+        periodicity = jd['periodicity']
 
-            Donation.objects.create(partner=part, date=date, donation_type=donation_type,
+        # Verificar si el partner está de alta
+        try:
+            partner = Partners.objects.get(id=partner_id, state='ACTIVE')
+        except Partners.DoesNotExist:
+            datos = {'message': "Partner not found or not active"}
+            return JsonResponse(datos, status=400)
+
+        # Crear la donación
+        date_str = jd['date']
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        Donation.objects.create(partner=partner, date=date, donation_type=donation_type,
                                 amount=amount, periodicity=periodicity)
-            datos = {'message': "Success"}
-        else:
 
-            datos = {'message': "Donation not found"}
+        datos = {'message': "Success"}
         return JsonResponse(datos)
+
     
     def put(self, request, id):
         jd = json.loads(request.body)

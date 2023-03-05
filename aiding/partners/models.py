@@ -6,8 +6,8 @@ from enum import Enum
 
 class Partners(models.Model):
     STATE_CHOICES = (
-        ('ALTA', 'alta'),
-        ('BAJA', 'baja'),
+        ('ACTIVE', 'active'),
+        ('INACTIVE', 'inactive'),
     )
 
     name = models.CharField(max_length=100, blank=False)
@@ -17,7 +17,7 @@ class Partners(models.Model):
     email = models.EmailField(unique=True, blank=False)
     province = models.CharField(max_length=50, blank=False)
     iban = models.CharField(max_length=34, unique=True, blank=False)
-    state = models.CharField(max_length=4, choices=STATE_CHOICES, default='alta')
+    state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
 
 
 class DonationType(Enum):
