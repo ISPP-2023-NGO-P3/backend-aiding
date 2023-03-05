@@ -1,4 +1,5 @@
 import json
+from django.forms import ValidationError
 from django.http.response import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -33,6 +34,18 @@ class PartnerManagement(View):
         jd = json.loads(request.body)
 
         try:
+            validate_dni(jd['dni'])
+        except ValidationError as e:
+            error = {'error': e.message}
+            return JsonResponse(error)
+    
+        try:
+            validate_iban(jd['iban'])
+        except ValidationError as e:
+            error = {'error': e.message}
+            return JsonResponse(error)
+
+        try:
             Partners.objects.create(name=jd['name'], last_name=jd['last_name'], 
             dni=jd['dni'], phone=jd['phone'], email=jd['email'], province=jd['province'],
             iban=jd['iban'], state=jd['state'])
@@ -47,6 +60,18 @@ class PartnerManagement(View):
         partners = list(Partners.objects.filter(id=id).values())
         if len(partners) > 0:
             partner = Partners.objects.get(id=id)
+            try:
+                validate_dni(jd['dni'])
+            except ValidationError as e:
+                error = {'error': e.message}
+                return JsonResponse(error)
+            
+            try:
+                validate_iban(jd['iban'])
+            except ValidationError as e:
+                error = {'error': e.message}
+                return JsonResponse(error)
+        
             partner.name = jd['name']
             partner.last_name=jd['last_name']
             partner.dni=jd['dni']
