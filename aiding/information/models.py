@@ -5,11 +5,14 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Resource(models.Model):
     title = models.CharField(blank=False, null=False, max_length=100)
-    description = models.CharField(max_length=255) 
-    street = models.CharField(max_length=100)
-    number = models.PositiveIntegerField()
-    city = models.CharField(max_length=100)
-    additional_comments = models.CharField(max_length=255)
+    description = models.CharField(blank=False, max_length=255) 
+    
+    street = models.CharField(blank=False, max_length=100)
+    number = models.PositiveIntegerField(blank=True)
+    city = models.CharField(blank=False, max_length=100)
+    additional_comments = models.CharField(blank=True, max_length=255)
 
-    latitude = models.FloatField(validators=[MaxValueValidator(90), MinValueValidator(-90)])
-    longitude = models.FloatField(validators=[MaxValueValidator(180), MinValueValidator(-180)])
+    latitude = models.FloatField(blank=False, validators=[MaxValueValidator(90), MinValueValidator(-90)])
+    longitude = models.FloatField(blank=False, validators=[MaxValueValidator(180), MinValueValidator(-180)])
+
+    
