@@ -11,4 +11,7 @@ urlpatterns = [
     path('multimedias/', MultimediaView.as_view()),
     path('multimedias/<int:id>',MultimediaView.as_view()),
 
+    # CUSTOM ENDPOINTS
+
+     path('sections/<int:section_id>/advertisements/',AdvertisementSectionView.as_view()),
 ]
