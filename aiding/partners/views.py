@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from .models import Partners, Donation
 from django.http import HttpResponseNotFound
+from datetime import datetime
 
 
 def generate_receipt_xml(donation):
@@ -36,7 +37,7 @@ def generate_receipt_xml(donation):
     receipt.append(concept)
 
     amount = ET.Element("importe")
-    amount.text = str(donation.amount) + "€"
+    amount.text = str(donation.total_donation) + "€"
     receipt.append(amount)
 
     xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
@@ -48,7 +49,8 @@ def download_receipt_xml(request,donation_id):
     try:
         donation=Donation.objects.get(id=donation_id)
         response = HttpResponse(generate_receipt_xml(donation),content_type="application/xml")
-        response['Content-Disposition'] = 'attachment; filename = exampleFile.xml'
+        todayDate=datetime.today().strftime('%Y-%m-%d')
+        response['Content-Disposition'] = 'attachment; filename ='+ donation.partner.name.replace(" ","") + donation.partner.last_name.replace(" ","") + todayDate  +'RECIBO.xml'
         return response 
     except:
         return HttpResponseNotFound("Donación no encontrada")
