@@ -6,6 +6,7 @@ from datetime import datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.forms import ValidationError
 from django.http.response import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -91,9 +92,23 @@ class PartnerManagement(View):
         jd = json.loads(request.body)
 
         try:
+            validate_dni(jd['dni'])
+        except ValidationError as e:
+            error = {'error': e.message}
+            return JsonResponse(error)
+    
+        try:
+            validate_iban(jd['iban'])
+        except ValidationError as e:
+            error = {'error': e.message}
+            return JsonResponse(error)
+
+        try:
             Partners.objects.create(name=jd['name'], last_name=jd['last_name'], 
-            dni=jd['dni'], phone=jd['phone'], email=jd['email'], province=jd['province'],
-            iban=jd['iban'], state=jd['state'])
+            dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
+            email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
+            province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
+            state=jd['state'])
             datos = {'message': "Success"}
             return JsonResponse(datos)
         except IntegrityError:
@@ -105,13 +120,33 @@ class PartnerManagement(View):
         partners = list(Partners.objects.filter(id=id).values())
         if len(partners) > 0:
             partner = Partners.objects.get(id=id)
+            try:
+                validate_dni(jd['dni'])
+            except ValidationError as e:
+                error = {'error': e.message}
+                return JsonResponse(error)
+            
+            #try:
+            #    validate_iban(jd['iban'])
+            #except ValidationError as e:
+            #    error = {'error': e.message}
+            #    return JsonResponse(error)
+        
             partner.name = jd['name']
             partner.last_name=jd['last_name']
             partner.dni=jd['dni']
-            partner.phone=jd['phone']
+            partner.phone1=jd['phone1']
+            partner.phone2=jd['phone2']
+            partner.birthdate=jd['birthdate']
+            partner.sex=jd['sex']
+            partner.address=jd['address']
+            partner.postal_code=jd['postal_code']
+            partner.township=jd['township']
             partner.email=jd['email']
             partner.province=jd['province']
+            partner.language=jd['language']
             partner.iban=jd['iban']
+            partner.account_holder=jd['account_holder']
             partner.state=jd['state']
             partner.save()
             datos = {'message': "Success"}
