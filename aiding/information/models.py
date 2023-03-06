@@ -12,6 +12,6 @@ class Resource(models.Model):
     city = models.CharField(blank=False, max_length=100)
     additional_comments = models.CharField(blank=True, max_length=255)
 
-    latitude = models.FloatField(blank=True, max_length=255)
-    longitude = models.FloatField(blank=True, max_length=255)
+    latitude = models.FloatField(blank=True, max_length=255, validators=[MaxValueValidator(90), MinValueValidator(-90)])
+    longitude = models.FloatField(blank=True, max_length=255, validators=[MaxValueValidator(180), MinValueValidator(-180)])
 
