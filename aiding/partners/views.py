@@ -39,11 +39,11 @@ class PartnerManagement(View):
             error = {'error': e.message}
             return JsonResponse(error)
     
-        #try:
-        #    validate_iban(jd['iban'])
-        #except ValidationError as e:
-        #    error = {'error': e.message}
-        #    return JsonResponse(error)
+        try:
+            validate_iban(jd['iban'])
+        except ValidationError as e:
+            error = {'error': e.message}
+            return JsonResponse(error)
 
         try:
             Partners.objects.create(name=jd['name'], last_name=jd['last_name'], 
