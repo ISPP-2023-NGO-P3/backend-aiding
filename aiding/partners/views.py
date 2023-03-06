@@ -15,6 +15,7 @@ from django.db import IntegrityError
 from .models import Partners, Donation
 from django.http import HttpResponseNotFound
 from datetime import datetime
+from .validators import *
 
 
 def generate_receipt_xml(partner):

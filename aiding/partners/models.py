@@ -1,5 +1,6 @@
 from datetime import date, timedelta, timezone
 from decimal import Decimal
+from enum import Enum
 from django.db import models
 from .validators import *
 
