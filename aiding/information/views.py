@@ -1,10 +1,13 @@
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.utils.decorators import method_decorator
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from .models import Resource
-import  json
+from geopy.geocoders import Nominatim
+
+
+import  json, urllib, urllib.parse
 
 class ResourceView(View):
     
@@ -20,40 +23,60 @@ class ResourceView(View):
                 data = {'resource': resource}
             else:
                 data = {'message': "Resource not found..."}
-            return JsonResponse(resources, safe = False)
+            
+            r = JsonResponse(resources, safe = False)
+            return r
         else:
             resources = list(Resource.objects.values())
             if len(resources) > 0:
                 data = {'resources': resources}
             else:
                 data = {'message': "Resources not found..."}
-            return JsonResponse(resources, safe=False)
+            r = JsonResponse(resources, safe = False)
+            return r
 
+    def get_coordinates(self, street, number, city):
+        address = street
+                   
+        if number:
+            if number.isdigit():
+                if int(number)>0:
+                    address += ", " + number
+                else:
+                    return JsonResponse({'error': "Number must be positive or null"})
+            else:
+                return JsonResponse({'error': "Number must be positive or null"})
+
+        address += ", "+ city
+        geolocator = Nominatim(user_agent="aiding")
+        location = geolocator.geocode(address)
+
+        if location:
+            latitude = location.latitude
+            longitude = location.longitude
+        else:
+            return JsonResponse({'error': "Address not found"})
+        print(latitude)
+        print(longitude)
+
+        return latitude, longitude
+
+    @staff_member_required
     def post(self, request):
 
         jd = json.loads(request.body)
-
         street = jd['street']
-        number = str(jd['number'])
+        number = jd['number']
         city = jd['city']
         
-        address = street +", "+ number+", "+city
-        latitude = jd['latitude']
-        longitude = jd['longitude']
-
-        if latitude is None or longitude is None:
-
-            url = f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
-
-            response = request.get(url).json()
-            latitude = response[0]['lat']
-            longitude = response[0]['lon']
-
-
-        Resource.objects.create(title=jd['title'],description=jd['description'],street=street,number=number,city=city,additional_comments=jd['additional_comments'],latitude=latitude,longitude=longitude)
+        coord = self.get_coordinates(street, number, city)
+        if isinstance(coord, JsonResponse):
+            return coord
+        Resource.objects.create(title=jd['title'],description=jd['description'],street=street,number=number,city=city,additional_comments=jd['additional_comments'],latitude=coord[0],longitude=coord[1])
         data = {'message': "Success"}
-        JsonResponse(data)
+        return JsonResponse(data)
 
+    @staff_member_required
     def put(self, request, id):
         jd = json.loads(request.body)
         resources = list(Resource.objects.filter(id=id).values())
@@ -61,33 +84,29 @@ class ResourceView(View):
             resource = Resource.objects.get(id=id)
             resource.title = jd['title']
             resource.description = jd['description']
-            resource.street = jd['street']
-            resource.number = jd['number']
-            resource.city = jd['city']
             resource.additional_comments = jd['additional_comments']
 
             street = jd['street']
-            number = str(jd['number'])
+            number = jd['number']
             city = jd['city']
         
-            address = street +", "+ number+", "+city
-            latitude = jd['latitude']
-            longitude = jd['longitude']
+            coord = self.get_coordinates(street, number, city)
+            if isinstance(coord, JsonResponse):
+                return coord
 
+            resource.number = number
+            resource.street = street
+            resource.city = city
 
-            if latitude is None or longitude is None:
-
-                url = f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
-
-                response = request.get(url).json()
-                latitude = response[0]['lat']
-                longitude = response[0]['lon']
-
-            resource.latitude = latitude
-            resource.longitude = longitude
+            resource.latitude = coord[0]
+            resource.longitude = coord[1]
 
             resource.save()
+            data = {'message': "Success"}
 
+            return JsonResponse(data)
+
+    @staff_member_required
     def delete(self, request, id):
         resources = list(Resource.objects.filter(id=id).values())
         if len(resources) > 0:

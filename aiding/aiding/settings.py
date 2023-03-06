@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 MODULES = [
     'base',
+    'information',
 ]
 
 INSTALLED_APPS = [
