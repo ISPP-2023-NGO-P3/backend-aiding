@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 MODULES = [
     'base',
+    'partners',
 ]
 
 INSTALLED_APPS = [
