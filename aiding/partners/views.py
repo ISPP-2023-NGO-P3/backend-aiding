@@ -16,20 +16,20 @@ from django.http import HttpResponseNotFound
 from datetime import datetime
 
 
-def generate_receipt_xml(donation):
+def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
     donator = ET.Element("donante")
     receipt.append(donator)
 
     name = ET.SubElement(donator,"nombre")
-    name.text=donation.partner.name
+    name.text=partner.name
     surname = ET.SubElement(donator,"apellido")
-    surname.text = donation.partner.last_name
+    surname.text = partner.last_name
     dni = ET.SubElement(donator,"dni")
-    dni.text = donation.partner.dni
+    dni.text = partner.dni
 
     iban = ET.Element("IBAN")
-    iban.text = donation.partner.iban
+    iban.text = partner.iban
     receipt.append(iban)
 
     concept = ET.Element("concepto")
@@ -37,7 +37,7 @@ def generate_receipt_xml(donation):
     receipt.append(concept)
 
     amount = ET.Element("importe")
-    amount.text = str(donation.total_donation) + "€"
+    amount.text = str(partner.total_donation) + "€"
     receipt.append(amount)
 
     xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
@@ -45,15 +45,15 @@ def generate_receipt_xml(donation):
 
     
 
-def download_receipt_xml(request,donation_id):
+def download_receipt_xml(request,partner_id):
     try:
-        donation=Donation.objects.get(id=donation_id)
-        response = HttpResponse(generate_receipt_xml(donation),content_type="application/xml")
+        partner=Partners.objects.get(id=partner_id)
+        response = HttpResponse(generate_receipt_xml(partner),content_type="application/xml")
         todayDate=datetime.today().strftime('%Y-%m-%d')
-        response['Content-Disposition'] = 'attachment; filename ='+ donation.partner.name.replace(" ","") + donation.partner.last_name.replace(" ","") + todayDate  +'RECIBO.xml'
+        response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + todayDate  +'RECIBO.xml'
         return response 
     except:
-        return HttpResponseNotFound("Donación no encontrada")
+        return HttpResponseNotFound("Socio no encontrado")
         
     
 
