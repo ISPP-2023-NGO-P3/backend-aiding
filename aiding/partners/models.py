@@ -20,7 +20,7 @@ class Partners(models.Model):
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
     
     def total_all_donation(self):
-        return sum(donation.amount for donation in self.donation.all())
+        return sum(donation.total_donation for donation in self.donation.all())
 
 
 
