@@ -22,7 +22,7 @@ class Partners(models.Model):
     last_name = models.CharField(max_length=100, blank=False)
     dni = models.CharField(max_length=9, unique=True, blank=False, validators=[validate_dni])
     phone1 = models.CharField(max_length=15, unique=True, blank=False)
-    phone2 = models.CharField(max_length=15, unique=True)
+    phone2 = models.CharField(max_length=15)
     birthdate = models.DateField(blank=False)
     sex = models.CharField(max_length=25, choices=SEX_CHOICES)
     email = models.EmailField(unique=True, blank=False)
