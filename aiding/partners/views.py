@@ -44,6 +44,12 @@ class PartnerManagement(View):
         except ValidationError as e:
             error = {'error': e.message}
             return JsonResponse(error)
+        
+        try:
+            validate_date(jd['birthdate'])
+        except ValidationError as e:
+            error = {'error': e.message}
+            return JsonResponse(error)
 
         try:
             Partners.objects.create(name=jd['name'], last_name=jd['last_name'], 
@@ -64,16 +70,12 @@ class PartnerManagement(View):
             partner = Partners.objects.get(id=id)
             try:
                 validate_dni(jd['dni'])
+                validate_iban(jd['iban'])
+                validate_date(jd['birthdate'])
             except ValidationError as e:
                 error = {'error': e.message}
                 return JsonResponse(error)
-            
-            try:
-               validate_iban(jd['iban'])
-            except ValidationError as e:
-                error = {'error': e.message}
-                return JsonResponse(error)
-        
+               
             partner.name = jd['name']
             partner.last_name=jd['last_name']
             partner.dni=jd['dni']
