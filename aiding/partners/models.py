@@ -22,8 +22,6 @@ class Partners(models.Model):
     def total_all_donation(self):
         return sum(donation.total_donation for donation in self.donation.all())
 
-
-
     
 class DonationPeriodicity(Enum):
     MONTHLY = {'name': 'MONTHLY', 'days': 30}
@@ -60,6 +58,7 @@ class Donation(models.Model):
                 periods_passed = (
                     (first_day_of_month - first_day_of_donation_month).days // DonationPeriodicity[self.periodicity].get_periodicity_days()
                 )
+                total_donation = self.amount * periods_passed
 
             self.total_donation = total_donation
             self.save(update_fields=['total_donation'])

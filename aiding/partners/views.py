@@ -99,7 +99,6 @@ class DonationView(View):
     def post(self, request):
         jd = json.loads(request.body)
         partner_id = jd['partner_id']
-        donation_type = jd['donation_type']
         amount = jd['amount']
         periodicity = jd['periodicity']
 
@@ -111,7 +110,7 @@ class DonationView(View):
 
         date_str = jd['date']
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        Donation.objects.create(partner=partner, date=date, donation_type=donation_type,
+        Donation.objects.create(partner=partner, date=date,
                                 amount=amount, periodicity=periodicity)
 
         datos = {'message': "Success"}
