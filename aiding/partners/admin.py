@@ -9,7 +9,7 @@ class PartnersAdmin(admin.ModelAdmin):
 admin.site.register(Partners, PartnersAdmin)
 
 class DonationAdmin(admin.ModelAdmin):
-    list_display = ('partner', 'date', 'donation_type', 'amount','periodicity','total_donation')
+    list_display = ('partner', 'date', 'amount','periodicity','total_donation')
     list_filter = ('partner', )
     search_fields = ('partner', )
 

@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from .models import Partners, Donation
 from django.http import HttpResponseNotFound
+
 from datetime import datetime
 from .validators import *
 
@@ -39,7 +40,7 @@ def generate_receipt_xml(partner):
     receipt.append(concept)
 
     amount = ET.Element("importe")
-    amount.text = str(partner.total_donation) + "€"
+    amount.text =str(Donation.objects.get(partner = partner).total_donation) +"€"
     receipt.append(amount)
 
     xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
@@ -54,8 +55,8 @@ def download_receipt_xml(request,partner_id):
         todayDate=datetime.today().strftime('%Y-%m-%d')
         response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + todayDate  +'RECIBO.xml'
         return response 
-    except:
-        return HttpResponseNotFound("Socio no encontrado")
+    except Exception:
+        return HttpResponse(status=404)
         
     
 
@@ -188,7 +189,7 @@ class DonationView(View):
         periodicity = jd['periodicity']
 
         try:
-            partner = Partners.objects.get(id=partner_id, state='ACTIVE')
+            partner = Partners.objects.get(id=partner_id, state='ACTIVO')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)

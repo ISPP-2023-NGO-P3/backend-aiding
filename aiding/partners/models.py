@@ -37,11 +37,12 @@ class Partners(models.Model):
     iban = models.CharField(max_length=34, unique=True, blank=False, validators=[validate_iban])
     account_holder = models.CharField(max_length=100, blank=False)
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
+    
+    def total_all_donation(self):
+        return sum(donation.total_donation for donation in self.donation.all())
 
 
-class DonationType(Enum):
-    FOOD = 'FOOD'
-    MONETARY = 'MONETARY'
+
     
 class DonationPeriodicity(Enum):
     MONTHLY = {'name': 'MONTHLY', 'days': 30}
@@ -56,12 +57,11 @@ class DonationPeriodicity(Enum):
 class Donation(models.Model):
     partner = models.ForeignKey(Partners, on_delete = models.CASCADE, related_name='donation')
     date = models.DateField()
-    donation_type = models.CharField(choices=[(t, t.value) for t in DonationType], max_length=20)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     periodicity = models.CharField(choices=[(p, p.value['name']) for p in DonationPeriodicity], max_length=20)
-    total_donation = models.DecimalField(max_digits=12, decimal_places=2, null=True) #total de donacion al año, de que fecha a que fecha, cuando necesitan exportar el total de donacion
-    
+    total_donation = models.DecimalField(max_digits=12, decimal_places=2, null=True) 
 
+    
     def save(self, *args, **kwargs):
         is_new = not self.pk
         super(Donation, self).save(*args, **kwargs)
@@ -79,13 +79,13 @@ class Donation(models.Model):
                 periods_passed = (
                     (first_day_of_month - first_day_of_donation_month).days // DonationPeriodicity[self.periodicity].get_periodicity_days()
                 )
-                if self.donation_type == DonationType.MONETARY.name:
-                    total_donation = self.amount * periods_passed
-                else:
-                    total_donation = self.amount
 
             self.total_donation = total_donation
-            self.save(update_fields=['total_donation'])    
+            self.save(update_fields=['total_donation'])
+
+    
+
+        
 
 
 
