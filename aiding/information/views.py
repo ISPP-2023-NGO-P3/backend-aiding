@@ -18,14 +18,14 @@ class SectionView(View):
     def get(self, request, id=0):
         if (id > 0):
             section = list(Section.objects.filter(id=id).values())
-            if len(section) > 0:
+            if len(section) > 0 :
                 section = section[0]
                 datos = {'section': section}
             else:
                 datos = {'message': "section not found..."}
             return JsonResponse(section, safe=False)
         else:
-            sections = list(Section.objects.values())
+            sections = list(Section.objects.filter(active=True).values())
             lenght = len(sections)
             if lenght > 0:
                 sections = sections[lenght-2:lenght]
@@ -148,12 +148,20 @@ class AdvertisementView(View):
                 datos = {'message': "advertisement not found..."}
             return JsonResponse(advertisement, safe=False)
         else:
-            advertisements = list(Advertisement.objects.values())
-            if len(advertisements) > 0:
-                datos = {'persons': advertisements}
-            else:
-                datos = {'message': "advertisements not found..."}
-            return JsonResponse(advertisements, safe=False)
+            try:
+                sections = Section.objects.filter(active=True)
+                if len(sections)>0:
+                    advertisements = []
+                    for sec in sections:
+                        section_id = sec.__getattribute__('id')
+                        advertisements_with_section_id = Advertisement.objects.filter(section_id=section_id).values()
+                        for adv in advertisements_with_section_id:
+                            advertisements.append(adv)
+                    return JsonResponse(advertisements, safe=False)
+                else:
+                    return HttpResponse(status=404)
+            except Exception:
+                return HttpResponse(status=404)
 
     def post(self, request):
         jd = json.loads(request.body)
@@ -214,7 +222,7 @@ class AdvertisementSectionView(View):
     def get(self, request, section_id=0):
         if (section_id > 0):
             try:
-                section = Section.objects.filter(id=section_id)
+                section = Section.objects.filter(id=section_id).filter(active=True)
                 section_id = section.get().__getattribute__('id')
                 advertisements_with_section_id = list(
                     Advertisement.objects.filter(section_id=section_id).values())
