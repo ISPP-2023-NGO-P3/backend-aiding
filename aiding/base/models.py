@@ -1,62 +1,42 @@
 from django.db import models
-from django.http.response import JsonResponse
-from django.utils.decorators import method_decorator
-from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from .models import *
-import json
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 
+class UserManager(BaseUserManager):
+    def create_user(self, username, password=None):
 
-class UserView(View):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+        user = self.model(username=username)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, password):
+        user = self.create_user(username, password)
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
     
-    def get(self, request, id = 0):
-        if (id > 0):
-            users = list(User.objects.filter(id=id).values())
-            if len(users) > 0:
-                user = users[0]
-                data = {'user': user}
-            else:
-                data = {'message': "user not found..."}
-            return JsonResponse(user, safe = False)
-        else:
-            users = list(User.objects.values())
-            if len(users) > 0:
-                data = {'users': users}
-            else:
-                data = {'message': "users not found..."}
-            return JsonResponse(users, safe = False)
-        
-    def post(self, request):
-        auth_user = request.user
-        if auth_user.is_authenticated() and auth_user.role == 'ADMIN':
-            jd = json.loads(request.body)
-            User.objects.create(username=jd['username'],password=jd['password'])
-            data = {'message': "Success"}
-            return JsonResponse(data)
-        else:
-            data = {'message': "You do not have permissions."}
-            return JsonResponse(data)
+class User(AbstractBaseUser):
+    username = models.CharField(blank=False, null=False, max_length=100, unique=True)
+    is_admin = models.BooleanField(default=False)
+    
+    USERNAME_FIELD = 'username'
 
-    def put(self, request, id):
-        jd = json.loads(request.body)
-        users = list(User.objects.filter(id=id).values())
-        
-        auth_user = request.user
-        
-        if auth_user.is_authenticated() and auth_user.role == 'ADMIN':
-            if len(users) > 0:
-                user = User.objects.get(id=id)
-                user.username = jd['username']
-                user.password = jd['password']
-                user.save()
-                data = {'message': "Success"}
-            else:
-                data = {'message': "User not found..."}
-            return JsonResponse(data)
-        
-        else:
-            data = {'message': "You do not have permissions."}
-            return JsonResponse(data)
+    objects = UserManager()
+
+    # is_staff method used exclusively for Django admin panel, use is_admin for regular user permission.
+    def is_staff(self):
+        return self.is_admin
+
+    def natural_key(self):
+        return self.username
+    
+    def has_module_perms(self, perm, obj=None):
+        return self.is_admin
+    
+    def has_perm(self, app_label):
+        return self.is_admin
+    
+class Notification(models.Model):
+    subject = models.CharField(blank=False, null=False, max_length=100)
+    message = models.TextField(blank=False, null=False)
+    targets = models.ManyToManyField(User)
