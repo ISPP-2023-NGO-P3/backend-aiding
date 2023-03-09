@@ -3,13 +3,13 @@ from .views import SectionView, AdvertisementView, MultimediaView, Advertisement
 
 urlpatterns = [
     path('sections/', SectionView.as_view()),
-    path('sections/<int:id>',SectionView.as_view()),
+    path('sections/<int:section_id>',SectionView.as_view()),
 
     path('advertisements/', AdvertisementView.as_view()),
-    path('advertisements/<int:id>',AdvertisementView.as_view()),
+    path('advertisements/<int:advertisement_id>',AdvertisementView.as_view()),
 
     path('multimedias/', MultimediaView.as_view()),
-    path('multimedias/<int:id>',MultimediaView.as_view()),
+    path('multimedias/<int:multimedia_id>',MultimediaView.as_view()),
 
     # CUSTOM ENDPOINTS
 

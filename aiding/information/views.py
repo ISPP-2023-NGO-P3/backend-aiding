@@ -21,9 +21,9 @@ class SectionView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id=0):
-        if (id > 0):
-            section = list(Section.objects.filter(id=id).values())
+    def get(self, request, section_id=0):
+        if (section_id > 0):
+            section = list(Section.objects.filter(id=section_id).values())
             if len(section) > 0:
                 section = section[0]
                 return Response(data=section, status=ST_200)
@@ -51,11 +51,11 @@ class SectionView(views.APIView):
                 'error': "This section was added into the page, please create another different"}
             return Response(data=error, status=ST_409)
 
-    def put(self, request, id):
+    def put(self, request, section_id):
         jd = json.loads(request.body)
-        sections = list(Section.objects.filter(id=id).values())
+        sections = list(Section.objects.filter(id=section_id).values())
         if len(sections) > 0:
-            section = Section.objects.get(id=id)
+            section = Section.objects.get(id=section_id)
             try:
                 section.name = jd['name']
                 section.active = jd['active']
@@ -70,10 +70,10 @@ class SectionView(views.APIView):
             datos = {'message': "Section not found..."}
         return Response(data=datos, status=ST_404)
 
-    def delete(self, request, id):
-        sections = list(Section.objects.filter(id=id).values())
+    def delete(self, request, section_id):
+        sections = list(Section.objects.filter(id=section_id).values())
         if len(sections) > 0:
-            Section.objects.filter(id=id).delete()
+            Section.objects.filter(id=section_id).delete()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_204)
         else:
@@ -88,9 +88,9 @@ class MultimediaView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id=0):
-        if (id > 0):
-            multimedia = list(Multimedia.objects.filter(id=id).values())
+    def get(self, request, multimedia_id=0):
+        if (multimedia_id > 0):
+            multimedia = list(Multimedia.objects.filter(id=multimedia_id).values())
             if len(multimedia) > 0:
                 multimedia = multimedia[0]
                 return Response(data=multimedia, status=ST_200)
@@ -118,14 +118,14 @@ class MultimediaView(views.APIView):
             datos = {'message': "Advertisements not found"}
             return Response(data=datos, status=ST_404)
 
-    def put(self, request, id):
+    def put(self, request, multimedia_id):
         jd = json.loads(request.body)
-        multimedias = list(Multimedia.objects.filter(id=id).values())
+        multimedias = list(Multimedia.objects.filter(id=multimedia_id).values())
         if len(multimedias) > 0:
             adv = Advertisement.objects.filter(id=jd['advertisement_id'])
             if len(adv) > 0:
                 adv = adv[0]
-                multimedia = Multimedia.objects.get(id=id)
+                multimedia = Multimedia.objects.get(id=multimedia_id)
                 multimedia.advertisement = adv
                 multimedia.multimedia = jd['multimedia']
                 multimedia.description = jd['description']
@@ -139,10 +139,10 @@ class MultimediaView(views.APIView):
             datos = {'message': "Multimedia not found..."}
         return Response(data=datos, status=ST_404)
 
-    def delete(self, request, id):
-        multimedias = list(Multimedia.objects.filter(id=id).values())
+    def delete(self, request, multimedia_id):
+        multimedias = list(Multimedia.objects.filter(id=multimedia_id).values())
         if len(multimedias) > 0:
-            Multimedia.objects.filter(id=id).delete()
+            Multimedia.objects.filter(id=multimedia_id).delete()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_204)
         else:
@@ -157,9 +157,9 @@ class AdvertisementView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id=0):
-        if (id > 0):
-            advertisement = list(Advertisement.objects.filter(id=id).values())
+    def get(self, request, advertisement_id=0):
+        if (advertisement_id > 0):
+            advertisement = list(Advertisement.objects.filter(id=advertisement_id).values())
             if len(advertisement) > 0:
                 advertisement = advertisement[0]
                 return Response(data=advertisement, status=ST_200)
@@ -203,14 +203,14 @@ class AdvertisementView(views.APIView):
                 'error': "This title's advertisement was added into the page, please create another different"}
             return Response(data=error, status=ST_409)
 
-    def put(self, request, id):
+    def put(self, request, advertisement_id):
         jd = json.loads(request.body)
-        advertisements = list(Advertisement.objects.filter(id=id).values())
+        advertisements = list(Advertisement.objects.filter(id=advertisement_id).values())
         if len(advertisements) > 0:
             sec = Section.objects.filter(id=jd['section_id'])
             if len(sec) > 0:
                 sec = sec[0]
-                advertisement = Advertisement.objects.get(id=id)
+                advertisement = Advertisement.objects.get(id=advertisement_id)
                 try:
                     advertisement.title = jd['title']
                     advertisement.description = jd['description']
@@ -231,10 +231,10 @@ class AdvertisementView(views.APIView):
             datos = {'message': "Advertisement not found"}
             return Response(data=datos, status=ST_404)
 
-    def delete(self, request, id):
-        advertisements = list(Advertisement.objects.filter(id=id).values())
+    def delete(self, request, advertisement_id):
+        advertisements = list(Advertisement.objects.filter(id=advertisement_id).values())
         if len(advertisements) > 0:
-            Advertisement.objects.filter(id=id).delete()
+            Advertisement.objects.filter(id=advertisement_id).delete()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_200)
         else:
