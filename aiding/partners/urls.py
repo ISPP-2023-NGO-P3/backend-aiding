@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import DonationView, PartnerManagement, CommunicationView
 
 urlpatterns = [
     path('donation/', DonationView.as_view()),

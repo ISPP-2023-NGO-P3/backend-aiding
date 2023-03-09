@@ -1,7 +1,6 @@
 
 from datetime import datetime
 import json
-from django.shortcuts import render
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -10,11 +9,10 @@ from django.http.response import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from .models import *
 from django.db import IntegrityError
 
 from django.http.response import JsonResponse
-from .models import Partners, Donation
+from .models import Partners, Donation, Communication
 
 class PartnerManagement(View):
     @method_decorator(csrf_exempt)
@@ -152,18 +150,12 @@ class CommunicationView(View):
     def get(self, request, id=0):
         if id>0:
             communications =list(Communication.objects.filter(id=id).values())
+            
             if len(communications) > 0:
                 communication = communications[0]
-                datos = {'communication': communication}
-            else:
-                datos = {'message': "Communication not found"}
             return JsonResponse(communication, safe = False)
         else:
             communications = list(Communication.objects.values())
-            if len(communications)>0:
-                datos = {'communications': communications}
-            else:
-                datos = {'message': "Communications not found"}
             return JsonResponse(communications, safe = False)
         
     def post(self, request):
