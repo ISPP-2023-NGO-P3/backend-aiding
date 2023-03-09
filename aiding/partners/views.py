@@ -79,12 +79,12 @@ class CommunicationView(View):
         
     
     def delete(self, request, id):
-        partners = list(Communication.objects.filter(id=id).values())
-        if len(partners) > 0:
+        communications = list(Communication.objects.filter(id=id).values())
+        if len(communications) > 0:
             Communication.objects.filter(id=id).delete()
             data = {'message': 'Success'}
         else:
-            data = {'message': 'Partner not found...'}
+            data = {'message': 'Communication not found...'}
         return JsonResponse(data)
 
 class PartnerView(View):
