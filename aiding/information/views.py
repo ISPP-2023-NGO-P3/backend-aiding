@@ -151,7 +151,6 @@ class MultimediaView(views.APIView):
 
 ##################################################################################################################
 
-
 class AdvertisementView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
