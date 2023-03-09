@@ -14,11 +14,13 @@ from rest_framework.status import HTTP_409_CONFLICT as ST_409
 from .models import Advertisement, Multimedia, Resource, Section
 
 
-class SectionView(views.APIView):
+class CsrfExemptMixin:
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
+
+class SectionView(CsrfExemptMixin, views.APIView):
     def get(self, request, section_id=0):
         if section_id > 0:
             section = list(Section.objects.filter(id=section_id).values())
@@ -81,11 +83,7 @@ class SectionView(views.APIView):
             return Response(data=datos, status=ST_404)
 
 
-class MultimediaView(views.APIView):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
+class MultimediaView(CsrfExemptMixin, views.APIView):
     def get(self, request, multimedia_id=0):
         if multimedia_id > 0:
             multimedia = list(Multimedia.objects.filter(id=multimedia_id).values())
@@ -151,11 +149,7 @@ class MultimediaView(views.APIView):
         return Response(data=datos, status=ST_404)
 
 
-class AdvertisementView(views.APIView):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
+class AdvertisementView(CsrfExemptMixin, views.APIView):
     def get(self, request, advertisement_id=0):
         if advertisement_id > 0:
             advertisement = list(
@@ -257,11 +251,7 @@ class AdvertisementView(views.APIView):
         # CUSTOM ENDPOINTS
 
 
-class AdvertisementSectionView(views.APIView):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
+class AdvertisementSectionView(CsrfExemptMixin, views.APIView):
     def get(self, request, section_id=0):
         if section_id > 0:
             try:
@@ -280,11 +270,7 @@ class AdvertisementSectionView(views.APIView):
             return Response(data=datos, status=ST_404)
 
 
-class ResourceView(views.APIView):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
+class ResourceView(CsrfExemptMixin, views.APIView):
     def get(self, request, resource_id=0):
         if resource_id > 0:
             resources = list(Resource.objects.filter(id=resource_id).values())
