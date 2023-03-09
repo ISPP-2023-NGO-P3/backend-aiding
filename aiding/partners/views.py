@@ -151,7 +151,7 @@ class CommunicationView(View):
         if partner_id > 0:
             communications = communications.filter(partner=partner_id)
             if len(list(communications.values()))>0:
-                if id>0:
+                if communication_id>0:
                     communications = communications.filter(id=communication_id)
                 if len(list(communications.values())) == 0:
                     datos = {'message':"Communication not found"}
