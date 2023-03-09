@@ -22,7 +22,6 @@ class Multimedia(models.Model):
     advertisement = models.ForeignKey(Advertisement, related_name='advertisement', on_delete = models.CASCADE)
     multimedia = models.ImageField(blank=True, null=True, upload_to='information/media')
     description = models.TextField(blank= True, null=True,max_length=255)
-    
 class Resource(models.Model):
     title = models.CharField(blank=False, null=False, max_length=100)
     description = models.CharField(blank=False, max_length=255)

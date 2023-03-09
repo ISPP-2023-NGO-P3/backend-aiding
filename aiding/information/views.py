@@ -260,7 +260,6 @@ class AdvertisementSectionView(views.APIView):
             datos = {'message': "Section not found"}
             return Response(data=datos, status=ST_404)
 class ResourceView(views.APIView):
-    
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
