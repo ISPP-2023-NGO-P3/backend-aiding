@@ -1,11 +1,18 @@
-from django.http.response import JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate, login, logout
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-class LoginView(View):
+from rest_framework import views
+from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_200_OK as ST_200,
+    HTTP_401_UNAUTHORIZED as ST_401
+)
+
+
+class LoginView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -17,10 +24,12 @@ class LoginView(View):
         if user is not None:
             login(request, user)
             data = {'message' : 'Login successful!'}
+            return Response(data, status=ST_200)
         else:
             data = {'message' : 'Login unsuccessful'}
+            return Response(data, status=ST_401)
 
-        return JsonResponse(data)
+        
 
 class LogoutView(View):
     @method_decorator(csrf_exempt)
@@ -33,4 +42,4 @@ class LogoutView(View):
             data = {'message' : 'Logout successful!'}
         else:
             data = {'message' : 'Logout unsuccessful'}
-        return JsonResponse(data) 
+        return Response(data, status=ST_200)
