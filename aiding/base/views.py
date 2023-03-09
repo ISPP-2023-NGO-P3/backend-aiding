@@ -29,8 +29,6 @@ class LoginView(views.APIView):
             data = {'message' : 'Login unsuccessful'}
             return Response(data, status=ST_401)
 
-        
-
 class LogoutView(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
