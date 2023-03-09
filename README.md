@@ -2,7 +2,7 @@
 
 ## Configure the enviroment
 
-Check your python version (3.10.7 recommended)
+Check your python version (3.10.9 recommended)
 ```
     $ python --version
 ```

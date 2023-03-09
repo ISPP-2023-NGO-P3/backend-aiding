@@ -1,7 +1,11 @@
 Django==4.1.7
 django-cors-headers==3.7.0 
+djangorestframework == 3.14.0
 
 # MySQL configuration
 mysqlclient==2.1.1
 PyMySQL==1.0.2
+
 geopy==2.3.0
+Pillow==9.4.0
+
