@@ -6,7 +6,7 @@ from .validators import validate_file_extension
 class Section(models.Model):
     name = models.CharField(unique=True, blank=False, null=False, max_length=100)
     active = models.BooleanField(blank=False, null=False , default=False)
-    
+
 class Advertisement(models.Model):
     title = models.CharField(unique=True, blank=False, null=False, max_length=200)
     description = models.TextField(blank= False, null=False, max_length=5000)
