@@ -47,9 +47,10 @@ class CommunicationView(View):
             part = part[0]
             date = jd['date']
             communication_type=jd['communication_type']
+            description = jd['description']
 
             Communication.objects.create(partner=part, date=date,
-                                            communication_type=communication_type)
+                                            communication_type=communication_type, description =description)
 
             data = {'message': 'Success'}
         else:
@@ -63,11 +64,12 @@ class CommunicationView(View):
             part = Partner.objects.filter(id = jd['partner_id'])
             if len(part) > 0:
                 part = part[0]
-                multimedia = Communication.objects.get(id=id)
-                multimedia.partner = part
-                multimedia.date = jd['date']
-                multimedia.communication_type = jd['communication_type']
-                multimedia.save()
+                communication = Communication.objects.get(id=id)
+                communication.partner = part
+                communication.date = jd['date']
+                communication.communication_type = jd['communication_type']
+                communication.description = jd['description']
+                communication.save()
                 datos = {'message': "Success"}
             else:
                 datos = {'message': "Partner not found..."}
