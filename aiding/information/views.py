@@ -1,9 +1,7 @@
 from django.db import IntegrityError
-from django.http.response import JsonResponse
 from django.utils.decorators import method_decorator
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from .models import *
+from .models import Section, Advertisement, Multimedia
 import json
 
 from rest_framework import views

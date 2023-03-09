@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import SectionView, AdvertisementView, MultimediaView, AdvertisementSectionView
 
 urlpatterns = [
     path('sections/', SectionView.as_view()),
