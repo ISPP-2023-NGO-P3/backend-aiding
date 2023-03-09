@@ -146,13 +146,13 @@ class CommunicationView(View):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
-    def get(self, request, id=0, partner_id = 0):
+    def get(self, request, communication_id=0, partner_id = 0):
         communications = Communication.objects
         if partner_id > 0:
             communications = communications.filter(partner=partner_id)
             if len(list(communications.values()))>0:
                 if id>0:
-                    communications = communications.filter(id=id)
+                    communications = communications.filter(id=communication_id)
                 if len(list(communications.values())) == 0:
                     datos = {'message':"Communication not found"}
                     return JsonResponse(datos)
@@ -180,14 +180,14 @@ class CommunicationView(View):
             data = {'message': 'Partner not found'}
         return JsonResponse(data)
         
-    def put(self, request, id, partner_id):
+    def put(self, request, communication_id, partner_id):
         jd = json.loads(request.body)
-        communications = Communication.objects.filter(id=id)
+        communications = Communication.objects.filter(id=communication_id)
         if len(list(communications.values())) > 0:
             part = Partners.objects.filter(id = partner_id)
             if len(part) > 0:
                 part = part[0]
-                communication = Communication.objects.get(id=id)
+                communication = Communication.objects.get(id=communication_id)
                 communication.partner = part
                 communication.date = jd['date']
                 communication.communication_type = jd['communication_type']
@@ -201,10 +201,10 @@ class CommunicationView(View):
         return JsonResponse(datos)
         
     
-    def delete(self, request, id, partner_id):
+    def delete(self, request, communication_id, partner_id):
         communications = Communication.objects.filter(partner=partner_id)
         if len(list(communications.values())) > 0:
-            communications = communications.filter(id=id)
+            communications = communications.filter(id=communication_id)
             if len(list(communications.values())) > 0:
                 communications.delete()
                 data = {'message': 'Success'}

@@ -7,5 +7,5 @@ urlpatterns = [
     path('', PartnerManagement.as_view()),
     path('<int:id>', PartnerManagement.as_view()),
     path('<int:partner_id>/communication/', CommunicationView.as_view()),
-    path('<int:partner_id>/communication/<int:id>',CommunicationView.as_view()),
+    path('<int:partner_id>/communication/<int:communication_id>',CommunicationView.as_view()),
 ]
