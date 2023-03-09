@@ -19,5 +19,6 @@ class Communication(models.Model):
         choices=[(t, t.value) for t in CommunicationType],
         max_length=20,
         null=False)
+    description = models.TextField(blank= False, null=False,max_length=255)
     
     
