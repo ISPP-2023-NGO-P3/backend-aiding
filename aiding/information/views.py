@@ -16,7 +16,6 @@ from rest_framework.status import (
 
 # Create your views here.
 
-
 class SectionView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
