@@ -22,7 +22,7 @@ class SectionView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id = 0):
+    def get(self, request, id=0):
         if (id > 0):
             section = list(Section.objects.filter(id=id).values())
             if len(section) > 0:
@@ -39,7 +39,7 @@ class SectionView(views.APIView):
                 return Response(data=sections, status=ST_200)
             else:
                 datos = {'message': "sections not found..."}
-                return Response(data=datos, status=ST_404)
+            return Response(data=datos, status=ST_404)
 
     def post(self, request):
         jd = json.loads(request.body)
@@ -69,7 +69,7 @@ class SectionView(views.APIView):
                 return Response(data=error, status=ST_409)
         else:
             datos = {'message': "Section not found..."}
-            return Response(data=datos, status=ST_404)
+        return Response(data=datos, status=ST_404)
 
     def delete(self, request, id):
         sections = list(Section.objects.filter(id=id).values())
@@ -104,7 +104,7 @@ class MultimediaView(views.APIView):
                 return Response(data=multimedias, status=ST_200)
             else:
                 datos = {'message': "multimedias not found..."}
-                return Response(data=datos, status=ST_404)
+            return Response(data=datos, status=ST_404)
 
     def post(self, request):
         jd = json.loads(request.body)
@@ -138,7 +138,7 @@ class MultimediaView(views.APIView):
                 return Response(data=datos, status=ST_404)
         else:
             datos = {'message': "Multimedia not found..."}
-            return Response(data=datos, status=ST_404)
+        return Response(data=datos, status=ST_404)
 
     def delete(self, request, id):
         multimedias = list(Multimedia.objects.filter(id=id).values())
@@ -148,7 +148,7 @@ class MultimediaView(views.APIView):
             return Response(data=datos, status=ST_204)
         else:
             datos = {'message': "Multimedia not found..."}
-            return Response(data=datos, status=ST_404)
+        return Response(data=datos, status=ST_404)
 
 ##################################################################################################################
 
