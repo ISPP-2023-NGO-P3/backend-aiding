@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import json
 from django.views import View
@@ -147,20 +146,26 @@ class CommunicationView(View):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
-    def get(self, request, id=0):
-        if id>0:
-            communications =list(Communication.objects.filter(id=id).values())
-            
-            if len(communications) > 0:
-                communication = communications[0]
-            return JsonResponse(communication, safe = False)
-        else:
-            communications = list(Communication.objects.values())
-            return JsonResponse(communications, safe = False)
-        
-    def post(self, request):
+    def get(self, request, id=0, partner_id = 0):
+        communications = Communication.objects
+        if partner_id > 0:
+            communications = communications.filter(partner=partner_id)
+            if len(list(communications.values()))>0:
+                if id>0:
+                    communications = communications.filter(id=id)
+                if len(list(communications.values())) == 0:
+                    datos = {'message':"Communication not found"}
+                    return JsonResponse(datos)
+                else:
+                    return JsonResponse(list(communications.values())[0], safe = False)
+            else:
+                datos = {'message':"Partner not found"}
+                return JsonResponse(datos)
+        return JsonResponse(list(communications.values()), safe = False)
+
+    def post(self, request, partner_id):
         jd = json.loads(request.body)
-        part = Partners.objects.filter(id = jd['partner'])
+        part = Partners.objects.filter(id = partner_id)
         if len(part) >0:
             part = part[0]
             date = jd['date']
@@ -175,11 +180,11 @@ class CommunicationView(View):
             data = {'message': 'Partner not found'}
         return JsonResponse(data)
         
-    def put(self, request, id):
+    def put(self, request, id, partner_id):
         jd = json.loads(request.body)
-        communications = list(Communication.objects.filter(id=id).values())
-        if len(communications) > 0:
-            part = Partners.objects.filter(id = jd['partner_id'])
+        communications = Communication.objects.filter(id=id)
+        if len(list(communications.values())) > 0:
+            part = Partners.objects.filter(id = partner_id)
             if len(part) > 0:
                 part = part[0]
                 communication = Communication.objects.get(id=id)
@@ -196,11 +201,15 @@ class CommunicationView(View):
         return JsonResponse(datos)
         
     
-    def delete(self, request, id):
-        communications = list(Communication.objects.filter(id=id).values())
-        if len(communications) > 0:
-            Communication.objects.filter(id=id).delete()
-            data = {'message': 'Success'}
+    def delete(self, request, id, partner_id):
+        communications = Communication.objects.filter(partner=partner_id)
+        if len(list(communications.values())) > 0:
+            communications = communications.filter(id=id)
+            if len(list(communications.values())) > 0:
+                communications.delete()
+                data = {'message': 'Success'}
+            else:
+                data = {'message': 'Communication not found...'}
         else:
-            data = {'message': 'Communication not found...'}
+            data = {'message': 'Partner not found...'}
         return JsonResponse(data)

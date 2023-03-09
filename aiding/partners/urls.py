@@ -6,6 +6,6 @@ urlpatterns = [
     path('donation/<int:id>',DonationView.as_view()),
     path('', PartnerManagement.as_view()),
     path('<int:id>', PartnerManagement.as_view()),
-    path('communication/', CommunicationView.as_view()),
-    path('communication/<int:id>',CommunicationView.as_view()),
+    path('<int:partner_id>/communication/', CommunicationView.as_view()),
+    path('<int:partner_id>/communication/<int:id>',CommunicationView.as_view()),
 ]
