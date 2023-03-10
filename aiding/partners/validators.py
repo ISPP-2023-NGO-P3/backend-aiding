@@ -1,5 +1,7 @@
 import datetime
 from django.forms import ValidationError
+from datetime import datetime
+from dateutil.parser import parse
 
 def validate_dni(dni):
     dni_letters = 'TRWAGMYFPDXBNJZSQVHLCKE'
@@ -17,7 +19,8 @@ def validate_iban(iban):
         raise ValidationError('El IBAN no es valido.')
     
 def validate_date(date):
-    if date >= str(datetime.date.today()):
-        raise ValidationError("La fecha debe ser anterior a la actual.")
-    if date < str(datetime.date.today()):
+    parsed_date = parse(date.strftime('%Y-%m-%d'))
+    year = datetime.strptime(str(parsed_date), "%Y-%m-%d %H:%M:%S")
+    age = datetime.now().year - year.year
+    if age < 18:
         raise ValidationError("Debe ser mayor de edad.")
