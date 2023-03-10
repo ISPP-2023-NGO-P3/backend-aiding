@@ -20,10 +20,10 @@ class Partners(models.Model):
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
     
 class DonationPeriodicity(Enum):
-    MONTHLY = {'name': 'MONTHLY', 'days': 30}
-    QUARTERLY = {'name': 'QUARTERLY', 'days': 90}
-    SEMIANNUAL  = {'name': 'SEMIANNUAL', 'days': 180}
-    ANNUAL = {'name': 'ANNUAL', 'days': 365}
+    MONTHLY = {'name': 'MENSUAL', 'days': 30}
+    QUARTERLY = {'name': 'TRIMESTRAL', 'days': 90}
+    SEMIANNUAL  = {'name': 'SEMESTRAL', 'days': 180}
+    ANNUAL = {'name': 'ANUAL', 'days': 365}
 
     def get_periodicity_days(self):
         return self.value['days']
@@ -36,18 +36,10 @@ class Donation(models.Model):
 
     
     def total_donation(self):
-        first_day_of_donation_month = self.date.replace(day=1, month=self.date.month, year=self.date.year)
-        first_day_of_month = date.today()
-        periods_passed = (
-            (first_day_of_month - first_day_of_donation_month).days // DonationPeriodicity[self.periodicity].get_periodicity_days()
-        )
-        total_donation = self.amount * periods_passed
 
-        return total_donation
-    
+        f_date = date.replace(day=31, month=12,  year=self.date.year)
+        numero_dias = (f_date-self.date).days()
 
-        
+        numero_periodos = int(numero_dias/DonationPeriodicity[self.periodicity].get_periodicity_days())
 
-
-
-
+        return numero_periodos*self.amount

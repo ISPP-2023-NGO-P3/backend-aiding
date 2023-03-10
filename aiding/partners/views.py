@@ -115,22 +115,6 @@ class DonationView(View):
 
         datos = {'message': "Success"}
         return JsonResponse(datos)
-
-    
-    def put(self, request, id):
-        jd = json.loads(request.body)
-        donations = list(Donation.objects.filter(id=id).values())
-        if len(donations) > 0:
-            partner =Partners.objects.filter(id = jd['partner_id'])
-            partner = partner[0]
-            donation = Donation.objects.get(id=id)
-            donation.partner = partner
-            donation.periodicity = jd['periodicity']
-            donation.save()
-            datos = {'message': "Success"}
-        else:
-            datos = {'message': "Donation not found..."}
-        return JsonResponse(datos)
     
     def delete(self, request, id):
         try:
