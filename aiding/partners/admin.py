@@ -15,3 +15,9 @@ class DonationAdmin(admin.ModelAdmin):
 
 admin.site.register(Donation, DonationAdmin)
 
+class CommunicationAdmin(admin.ModelAdmin):
+    list_display=('partner', 'date', 'communication_type', 'description')
+    list_filter = ('partner', 'date', 'description', 'communication_type')
+    search_fields =('partner', 'date', 'description', 'communication_type')
+
+admin.site.register(Communication, CommunicationAdmin)

@@ -69,17 +69,15 @@ class Donation(models.Model):
             self.save(update_fields=['total_donation'])   
 
 
-class CommunicationType(Enum):
-    TELEFONICA = 'TELEFÓNICA'
-    TELEMATICA = 'TELEMÁTICA'
-    PERSONAL = 'PERSONAL'
-    EMAIL = 'EMAIL'
-
 class Communication(models.Model):
+    COMMUNICATION_TYPE = (
+        ('TELEPHONIC' , 'TELEPHONIC'),
+        ('TELEMATIC' , 'TELEMATIC'),
+        ('PERSONAL' , 'PERSONAL'),
+        ('EMAIL' ,'EMAIL'),
+    )
+
     partner = models.ForeignKey(Partners, on_delete= models.CASCADE, related_name='communication')
     date = models.DateField(null = False)
-    communication_type = models.CharField(
-        choices=[(t, t.value) for t in CommunicationType],
-        max_length=20,
-        null=False)
+    communication_type = models.CharField(max_length=25, choices= COMMUNICATION_TYPE, blank= False)
     description = models.TextField(blank= False, null=False,max_length=255)

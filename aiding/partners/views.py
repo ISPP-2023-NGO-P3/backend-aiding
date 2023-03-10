@@ -151,13 +151,13 @@ class CommunicationView(View):
         if partner_id > 0:
             communications = communications.filter(partner=partner_id)
             if len(list(communications.values()))>0:
-                if communication_id>0:
-                    communications = communications.filter(id=communication_id)
                 if len(list(communications.values())) == 0:
                     datos = {'message':"Communication not found"}
                     return JsonResponse(datos)
+                if communication_id>0:
+                    communications = communications.filter(id=communication_id)
                 else:
-                    return JsonResponse(list(communications.values())[0], safe = False)
+                    return JsonResponse(list(communications.values()), safe = False)
             else:
                 datos = {'message':"Partner not found"}
                 return JsonResponse(datos)
