@@ -295,7 +295,6 @@ class ResourceView(CsrfExemptMixin, views.APIView):
             street = jd["street"]
             number = jd["number"]
             city = jd["city"]
-            print(city)
 
             coord = Resource.get_coordinates(self, street, number, city)
             if isinstance(coord, Response):

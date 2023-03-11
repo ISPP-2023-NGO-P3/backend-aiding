@@ -55,20 +55,18 @@ class ResourceAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        if change:
-            old_obj = self.model.objects.get(pk=obj.pk)
-            if (
-                old_obj.number != obj.number
-                or old_obj.street != obj.street
-                or old_obj.city != obj.city
-                or old_obj.latitude != obj.latitude
-                or old_obj.longitude != obj.longitude
-            ):
-                coord = Resource.get_coordinates(self, obj.street, obj.number, obj.city)
-                if isinstance(coord, Response):
-                    return coord
-                else:
-                    obj.latitude, obj.longitude = coord[0], coord[1]
+    
+        jd = request.POST
+
+        street = jd["street"]
+        number = jd["number"]
+        city = jd["city"]
+
+        coord = Resource.get_coordinates(self, street, number, city)
+        if isinstance(coord, Response):
+            return coord
+        else:
+            obj.latitude, obj.longitude = coord[0], coord[1]
         super().save_model(request, obj, form, change)
 
 
