@@ -1,9 +1,18 @@
+
+from datetime import datetime
+import json
+from django.shortcuts import render
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 import json
 from django.forms import ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from django.db import IntegrityError
+from django.http.response import JsonResponse
+from .models import Partners, Donation
 
 from rest_framework import views
 from rest_framework.response import Response
@@ -13,7 +22,6 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,
 )
-
 
 class PartnerManagement(views.APIView):
     @method_decorator(csrf_exempt)
@@ -30,6 +38,7 @@ class PartnerManagement(views.APIView):
                 datos = {'message': "partner not found..."}
             return Response(data=datos, status=ST_404)
         else:
+
             partners = list(Partners.objects.values())
             if len(partners) > 0:
                 datos = {'partners': partners}
@@ -37,7 +46,7 @@ class PartnerManagement(views.APIView):
             else:
                 datos = {'message': "partners not found..."}
             return Response(data=datos, status=ST_404)
-        
+  
     def post(self, request):
         jd = json.loads(request.body)
 
@@ -101,3 +110,74 @@ class PartnerManagement(views.APIView):
         else:
             datos = {'message': "Partner not found..."}
         return Response(data=error, status=ST_409)
+    
+
+class DonationView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if id > 0:
+            donations = list(Donation.objects.filter(id=id).values())
+            if len(donations) > 0:
+                donation = donations[0]
+                datos = {'donation': donation}
+            else:
+                datos = {'message': "Donation not found..."}
+            return JsonResponse(donation, safe=False)
+        else:
+            donations = list(Donation.objects.values())
+            if len(donations) > 0:
+                datos = {'donations': donations}
+            else:
+                datos = {'message': "Donations not found..."}
+            return JsonResponse(donations, safe=False)
+        
+    def post(self, request):
+        jd = json.loads(request.body)
+        partner_id = jd['partner_id']
+        donation_type = jd['donation_type']
+        amount = jd['amount']
+        periodicity = jd['periodicity']
+
+        try:
+            partner = Partners.objects.get(id=partner_id, state='ACTIVE')
+        except Partners.DoesNotExist:
+            datos = {'message': "Partner not found or not active"}
+            return JsonResponse(datos, status=400)
+
+        date_str = jd['date']
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        Donation.objects.create(partner=partner, date=date, donation_type=donation_type,
+                                amount=amount, periodicity=periodicity)
+
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
+
+    
+    def put(self, request, id):
+        jd = json.loads(request.body)
+        donations = list(Donation.objects.filter(id=id).values())
+        if len(donations) > 0:
+            partner =Partners.objects.filter(id = jd['partner_id'])
+            partner = partner[0]
+            donation = Donation.objects.get(id=id)
+            donation.partner = partner
+            donation.periodicity = jd['periodicity']
+            donation.save()
+            datos = {'message': "Success"}
+        else:
+            datos = {'message': "Donation not found..."}
+        return JsonResponse(datos)
+    
+    def delete(self, request, id):
+        try:
+            donation = Donation.objects.get(id=id)
+            donation.delete()
+            datos = {'message': "Success"}
+        except Donation.DoesNotExist:
+            datos = {'message': "Donation not found..."}
+        return JsonResponse(datos)
+
