@@ -12,12 +12,10 @@ def validate_dni(dni):
             raise ValidationError('La letra del DNI no es correcta')
     except ValueError:
         raise ValidationError('El formato del DNI no es correcto')
-    
 def validate_iban(iban):
     iban = iban.replace(' ', '').replace('-', '').upper()
     if len(iban) != 24 or not iban[:2] == 'ES' or not iban[2:].isdigit():
         raise ValidationError('El IBAN no es valido.')
-    
 def validate_date(date):
     parsed_date = parse(date.strftime('%Y-%m-%d'))
     year = datetime.strptime(str(parsed_date), "%Y-%m-%d %H:%M:%S")

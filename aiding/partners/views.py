@@ -1,18 +1,13 @@
-
 from datetime import datetime
-import json
-from django.shortcuts import render
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.forms import ValidationError
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from .models import *
 from django.db import IntegrityError
 from django.http.response import JsonResponse
 from .models import Partners, Donation
+from validators import validate_date, validate_dni, validate_iban
 
 from rest_framework import views
 from rest_framework.response import Response
@@ -105,7 +100,7 @@ class PartnerManagement(views.APIView):
                 return Response(data=datos, status=ST_200)
             except:
                 error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
-            return Response(data=error, status=ST_409)
+                return Response(data=error, status=ST_409)
 
         else:
             datos = {'message': "Partner not found..."}
