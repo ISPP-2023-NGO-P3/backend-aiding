@@ -11,7 +11,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 
 class AdvertisementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'url', 'section')
+    list_display = ('title', 'url', 'section')
     list_filter = ('title', )
     search_fields = ('title', )
 
