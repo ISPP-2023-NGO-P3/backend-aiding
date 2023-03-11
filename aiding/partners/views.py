@@ -77,7 +77,7 @@ class PartnerManagement(views.APIView):
             except ValidationError as e:
                 error = {'error': e.message}
                 return Response(data=error, status=ST_409)
-            try:   
+            try:
                 partner.name = jd['name']
                 partner.last_name=jd['last_name']
                 partner.dni=jd['dni']
@@ -98,7 +98,7 @@ class PartnerManagement(views.APIView):
                 partner.save()
                 datos = {'message': "Success"}
                 return Response(data=datos, status=ST_200)
-            except:
+            except IntegrityError:
                 error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
                 return Response(data=error, status=ST_409)
 

@@ -1,6 +1,5 @@
 import datetime
 from django.forms import ValidationError
-from datetime import datetime
 from dateutil.parser import parse
 
 def validate_dni(dni):
