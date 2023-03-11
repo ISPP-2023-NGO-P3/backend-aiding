@@ -8,21 +8,34 @@ from .validators import validate_file_extension
 
 
 class Section(models.Model):
-    name = models.CharField(unique=True, blank=False,
-                            null=False, max_length=100)
+    name = models.CharField(unique=True, blank=False, null=False, max_length=100)
     active = models.BooleanField(blank=False, null=False, default=False)
+
 
 class Advertisement(models.Model):
     title = models.CharField(unique=True, blank=False, null=False, max_length=200)
-    description = models.TextField(blank= False, null=False, max_length=5000)
-    url = models.URLField(null= True, blank= True)
-    section = models.ForeignKey(Section, related_name='section', on_delete = models.CASCADE)
-    front_page = models.ImageField(null=False, upload_to='information/advertisements', default="information/media/default.png", validators=[validate_file_extension])
+    description = models.TextField(blank=False, null=False, max_length=5000)
+    url = models.URLField(null=True, blank=True)
+    section = models.ForeignKey(
+        Section, related_name="section", on_delete=models.CASCADE
+    )
+    front_page = models.ImageField(
+        null=False,
+        upload_to="information/advertisements",
+        default="information/media/default.png",
+        validators=[validate_file_extension],
+    )
+
 
 class Multimedia(models.Model):
-    advertisement = models.ForeignKey(Advertisement, related_name='advertisement', on_delete = models.CASCADE)
-    multimedia = models.ImageField(blank=True, null=True, upload_to='information/multimedia')
-    description = models.TextField(blank= True, null=True,max_length=255)
+    advertisement = models.ForeignKey(
+        Advertisement, related_name="advertisement", on_delete=models.CASCADE
+    )
+    multimedia = models.ImageField(
+        blank=True, null=True, upload_to="information/multimedia"
+    )
+    description = models.TextField(blank=True, null=True, max_length=255)
+
 
 class Resource(models.Model):
     title = models.CharField(blank=False, null=False, max_length=100)
@@ -33,10 +46,16 @@ class Resource(models.Model):
     city = models.CharField(blank=False, max_length=100)
     additional_comments = models.CharField(blank=True, max_length=255)
 
-    latitude = models.FloatField(blank=True, max_length=255, validators=[
-                                 MaxValueValidator(90), MinValueValidator(-90)])
-    longitude = models.FloatField(blank=True, max_length=255, validators=[
-                                  MaxValueValidator(180), MinValueValidator(-180)])
+    latitude = models.FloatField(
+        blank=True,
+        max_length=255,
+        validators=[MaxValueValidator(90), MinValueValidator(-90)],
+    )
+    longitude = models.FloatField(
+        blank=True,
+        max_length=255,
+        validators=[MaxValueValidator(180), MinValueValidator(-180)],
+    )
 
     def get_coordinates(self, street, number, city):
         address = street
