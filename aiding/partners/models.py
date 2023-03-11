@@ -1,23 +1,45 @@
-from datetime import date, timedelta, timezone
+from datetime import date
 from decimal import Decimal
 from django.db import models
+from validators import validate_date, validate_dni, validate_iban
 from django.db.models import Sum
 from enum import Enum
 
 class Partners(models.Model):
     STATE_CHOICES = (
-        ('ACTIVO', 'activo'),
-        ('INACTIVO', 'inactivo'),
+        ('Active', 'active'),
+        ('Inactive', 'inactive'),
+    )
+
+    SEX_CHOICES = (
+        ('Men', 'men'),
+        ('Women', 'women'),
+        ('None', 'none'),
+    )
+
+    LANGUAGE_CHOICES = (
+        ('Spanish', 'spanish'),
+        ('Catalan', 'catalan'),
     )
 
     name = models.CharField(max_length=100, blank=False)
     last_name = models.CharField(max_length=100, blank=False)
-    dni = models.CharField(max_length=9, unique=True, blank=False)
-    phone = models.CharField(max_length=15, unique=True, blank=False)
+    dni = models.CharField(max_length=9, unique=True, blank=False, validators=[validate_dni])
+    phone1 = models.CharField(max_length=15, unique=True, blank=False)
+    phone2 = models.CharField(max_length=15, blank=True)
+    birthdate = models.DateField(blank=False, validators=[validate_date])
+    sex = models.CharField(max_length=25, choices=SEX_CHOICES)
     email = models.EmailField(unique=True, blank=False)
+    address = models.CharField(max_length=150, blank=False)
+    postal_code = models.CharField(max_length=5, blank=False)
+    township = models.CharField(max_length=50, blank=False)
     province = models.CharField(max_length=50, blank=False)
-    iban = models.CharField(max_length=34, unique=True, blank=False)
+    language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES, blank=False)
+    iban = models.CharField(max_length=34, unique=True, blank=False, validators=[validate_iban])
+    account_holder = models.CharField(max_length=100, blank=False)
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
+    observations = models.CharField(max_length=500, blank=True)
+
     
 class DonationPeriodicity(Enum):
     MONTHLY = {'name': 'MENSUAL', 'days': 30}
@@ -43,3 +65,4 @@ class Donation(models.Model):
         numero_periodos = int(numero_dias/DonationPeriodicity[self.periodicity].get_periodicity_days())
 
         return numero_periodos*self.amount
+
