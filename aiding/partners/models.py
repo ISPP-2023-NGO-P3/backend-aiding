@@ -71,8 +71,8 @@ class Donation(models.Model):
 
 class Communication(models.Model):
     COMMUNICATION_TYPE = (
-        ('TELEPHONIC' , 'TELEFÓNICA'),
-        ('TELEMATIC' , 'TELEMÁTICA'),
+        ('TELEFÓNICA','TELEPHONIC'),
+        ('TELEMÁTICA','TELEMATIC'),
         ('PERSONAL' , 'PERSONAL'),
         ('EMAIL' ,'EMAIL'),
     )
