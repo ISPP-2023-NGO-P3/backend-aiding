@@ -55,7 +55,6 @@ class ResourceAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-    
         jd = request.POST
 
         street = jd["street"]

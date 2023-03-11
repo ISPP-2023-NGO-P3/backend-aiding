@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 
-
 from .validators import validate_file_extension
 
 
@@ -84,5 +83,4 @@ class Resource(models.Model):
         else:
             error = "Address not found."
             return Response(data=error, status=ST_404)
-        print(latitude+longitude)
         return latitude, longitude
