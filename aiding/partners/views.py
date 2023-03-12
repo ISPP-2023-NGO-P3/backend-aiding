@@ -158,9 +158,10 @@ class DonationView(View):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id=0):
+    def get(self, request, id):
+        partner = Partners.objects.get(id=id)
         if id > 0:
-            donations = list(Donation.objects.filter(id=id).values())
+            donations = list(Donation.objects.filter(partner=partner).values())
             if len(donations) > 0:
                 donation = donations[0]
                 datos = {'donation': donation}
@@ -175,20 +176,19 @@ class DonationView(View):
                 datos = {'message': "Donations not found..."}
             return JsonResponse(donations, safe=False)
         
-    def post(self, request):
+    def post(self, request, id):
         jd = json.loads(request.body)
-        partner_id = jd['partner_id']
         amount = jd['amount']
         periodicity = jd['periodicity']
 
         try:
-            partner = Partners.objects.get(id=partner_id, state='Activo')
+            partner = Partners.objects.get(id=id, state='Activo')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)
 
         date_str = jd['date']
-        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
         Donation.objects.create(partner=partner, date=date,
                                 amount=amount, periodicity=periodicity)
         datos = {'message': "Success"}
@@ -202,4 +202,11 @@ class DonationView(View):
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
+    
+def get_don_part(request, id):
+    partner = Partners.objects.get(id=id, state='Activo')
+    donation = Donation.objects.filter(partner=partner)
+    datos = list(donation.values())[0]
+    return JsonResponse(datos, safe=False)
+    
 
