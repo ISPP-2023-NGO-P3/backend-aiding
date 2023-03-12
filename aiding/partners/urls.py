@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import *
-from .views import CommunicationView
+from .views import PartnerManagement, DonationView, download_receipt_xml, CommunicationView
 
 urlpatterns = [
     path('', PartnerManagement.as_view()),
