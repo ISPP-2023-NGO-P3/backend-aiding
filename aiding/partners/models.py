@@ -38,7 +38,6 @@ class Partners(models.Model):
     iban = models.CharField(max_length=34, unique=True, blank=False, validators=[validate_iban])
     account_holder = models.CharField(max_length=100, blank=False)
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
-    observations = models.CharField(max_length=500, blank=True)
 
     
 class DonationPeriodicity(Enum):

@@ -112,7 +112,7 @@ class PartnerManagement(views.APIView):
             dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
             email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
             province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
-            state=jd['state'], observations=jd['observations'])
+            state=jd['state'])
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
         except IntegrityError:
@@ -148,7 +148,6 @@ class PartnerManagement(views.APIView):
                 partner.iban=jd['iban']
                 partner.account_holder=jd['account_holder']
                 partner.state=jd['state']
-                partner.observations=jd['observations']
                 partner.save()
                 datos = {'message': "Success"}
                 return Response(data=datos, status=ST_200)
