@@ -66,3 +66,15 @@ class Donation(models.Model):
 
         return numero_periodos*self.amount
 
+class Communication(models.Model):
+    COMMUNICATION_TYPE = (
+            ('TELEPHONIC' , 'TELEFÓNICA'),
+            ('TELEMATIC' , 'TELEMÁTICA'),
+            ('PERSONAL' , 'PERSONAL'),
+            ('EMAIL' ,'EMAIL'),
+        )
+
+    partner = models.ForeignKey(Partners, on_delete= models.CASCADE, related_name='communication')
+    date = models.DateField(null = False)
+    communication_type = models.CharField(max_length=25, choices= COMMUNICATION_TYPE, blank= False)
+    description = models.TextField(blank= False, null=False,max_length=255)

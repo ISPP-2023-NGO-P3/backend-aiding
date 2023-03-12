@@ -1,3 +1,9 @@
+from datetime import datetime
+import json
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import json
 from django.http import HttpResponse
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString 
@@ -18,6 +24,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
+
+from django.http.response import JsonResponse
+from .models import Partners, Donation, Communication
 from .models import Partners, Donation
 from datetime import datetime
 from .validators import *
@@ -203,3 +212,70 @@ class DonationView(View):
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
 
+
+class CommunicationView(View):
+    
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request, communication_id=0, partner_id = 0):
+        communications = Communication.objects
+        if partner_id > 0:
+            communications = communications.filter(partner=partner_id)
+            if communication_id>0:
+                communications = communications.filter(id=communication_id)
+            else:
+                return JsonResponse(list(communications.values()), safe = False)
+        return JsonResponse(list(communications.values()), safe = False)
+
+    def post(self, request, partner_id):
+        jd = json.loads(request.body)
+        part = Partners.objects.filter(id = partner_id)
+        if len(part) >0:
+            part = part[0]
+            date = jd['date']
+            communication_type=jd['communication_type']
+            description = jd['description']
+
+            Communication.objects.create(partner=part, date=date,
+                                            communication_type=communication_type, description =description)
+
+            data = {'message': 'Success'}
+        else:
+            data = {'message': 'Partner not found'}
+        return JsonResponse(data)
+        
+    def put(self, request, communication_id, partner_id):
+        jd = json.loads(request.body)
+        communications = Communication.objects.filter(id=communication_id)
+        if len(list(communications.values())) > 0:
+            part = Partners.objects.filter(id = partner_id)
+            if len(part) > 0:
+                part = part[0]
+                communication = Communication.objects.get(id=communication_id)
+                communication.partner = part
+                communication.date = jd['date']
+                communication.communication_type = jd['communication_type']
+                communication.description = jd['description']
+                communication.save()
+                datos = {'message': "Success"}
+            else:
+                datos = {'message': "Partner not found..."}
+        else:
+            datos = {'message': "Communication not found..."}
+        return JsonResponse(datos)
+        
+    
+    def delete(self, request, communication_id, partner_id):
+        communications = Communication.objects.filter(partner=partner_id)
+        if len(list(communications.values())) > 0:
+            communications = communications.filter(id=communication_id)
+            if len(list(communications.values())) > 0:
+                communications.delete()
+                data = {'message': 'Success'}
+            else:
+                data = {'message': 'Communication not found...'}
+        else:
+            data = {'message': 'Partner not found...'}
+        return JsonResponse(data)
