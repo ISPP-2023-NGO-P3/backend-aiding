@@ -1,9 +1,11 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
+from rest_framework.status import HTTP_408_REQUEST_TIMEOUT as ST_408
 
 from .validators import validate_file_extension
 
@@ -76,6 +78,11 @@ class Resource(models.Model):
         address += ", " + city
         geolocator = Nominatim(user_agent="aiding")
         location = geolocator.geocode(address)
+        try:
+            location = geolocator.geocode(address, timeout=10)
+        except GeocoderTimedOut as error_timeout:
+            error = "GeocodeTimedOut: " + str(error_timeout)
+            return Response(data=error, status=ST_408)
 
         if location:
             latitude = location.latitude
