@@ -1,4 +1,6 @@
+import datetime
 from django.forms import ValidationError
+from dateutil.parser import parse
 
 def validate_dni(dni):
     dni_letters = 'TRWAGMYFPDXBNJZSQVHLCKE'
@@ -9,8 +11,13 @@ def validate_dni(dni):
             raise ValidationError('La letra del DNI no es correcta')
     except ValueError:
         raise ValidationError('El formato del DNI no es correcto')
-    
-def validate_iban(value):
-    value = value.replace(' ', '').replace('-', '').upper()
-    if len(value) != 24 or not value[:2] == 'ES' or not value[2:].isdigit():
-        raise ValidationError('The IBAN is not valid.')
+def validate_iban(iban):
+    iban = iban.replace(' ', '').replace('-', '').upper()
+    if len(iban) != 24 or not iban[:2] == 'ES' or not iban[2:].isdigit():
+        raise ValidationError('El IBAN no es valido.')
+def validate_date(date):
+    parsed_date = parse(date.strftime('%Y-%m-%d'))
+    year = datetime.datetime.strptime(str(parsed_date), "%Y-%m-%d %H:%M:%S")
+    age = datetime.datetime.now().year - year.year
+    if age < 18:
+        raise ValidationError("Debe ser mayor de edad.")
