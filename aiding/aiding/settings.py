@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 MODULES = [
     'base',
     'information',
+    'partners',
 ]
 
 INSTALLED_APPS = [
@@ -56,11 +57,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 # Allow cors origin
 CORS_ORIGIN_WHITELIST = (
+<<<<<<< HEAD
 
+=======
+    'http://127.0.0.1',
+    'http://127.0.0.1:3000',
+>>>>>>> develop
 )
 
 CORS_ORIGIN_ALLOW_ALL=True
