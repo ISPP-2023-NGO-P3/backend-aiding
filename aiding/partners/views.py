@@ -1,8 +1,9 @@
-import json
 from django.http import HttpResponse
 import xml.etree.ElementTree as ET
-from xml.dom.minidom import parseString
+from xml.dom.minidom import parseString 
+import json
 from django.forms import ValidationError
+from .validators import validate_date, validate_dni, validate_iban
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -18,7 +19,7 @@ from django.db import IntegrityError
 from django.http.response import JsonResponse
 from .models import Partners, Donation, Communication
 from datetime import datetime
-from .validators import validate_date, validate_dni, validate_iban
+from .validators import *
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
