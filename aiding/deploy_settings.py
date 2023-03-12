@@ -6,3 +6,5 @@ DATABASES = {
         'NAME': 'isppDB',
     }
 }
+
+ALLOWED_HOSTS = ['*']
