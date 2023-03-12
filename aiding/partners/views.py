@@ -1,7 +1,7 @@
 import json
 from django.http import HttpResponse
 import xml.etree.ElementTree as ET
-from xml.dom.minidom import parseString 
+from xml.dom.minidom import parseString
 from django.forms import ValidationError
 from rest_framework import views
 from rest_framework.response import Response
@@ -155,16 +155,9 @@ class DonationView(View):
             donations = list(Donation.objects.filter(partner=partner).values())
             if len(donations) > 0:
                 donation = donations[0]
-                datos = {'donation': donation}
-            else:
-                datos = {'message': "Donation not found..."}
             return JsonResponse(donation, safe=False)
         else:
             donations = list(Donation.objects.values())
-            if len(donations) > 0:
-                datos = {'donations': donations}
-            else:
-                datos = {'message': "Donations not found..."}
             return JsonResponse(donations, safe=False)
         
     def post(self, request, partner_id):
