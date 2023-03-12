@@ -17,7 +17,7 @@ def validate_iban(iban):
         raise ValidationError('El IBAN no es valido.')
 def validate_date(date):
     parsed_date = parse(date.strftime('%Y-%m-%d'))
-    year = datetime.strptime(str(parsed_date), "%Y-%m-%d %H:%M:%S")
-    age = datetime.now().year - year.year
+    year = datetime.datetime.strptime(str(parsed_date), "%Y-%m-%d %H:%M:%S")
+    age = datetime.datetime.now().year - year.year
     if age < 18:
         raise ValidationError("Debe ser mayor de edad.")

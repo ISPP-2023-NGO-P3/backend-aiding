@@ -176,3 +176,35 @@ class DonationView(View):
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
 
+class ImportCSVView(views.APIView):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def post(self, request):
+        jd = json.loads(request.body)
+
+        i=0
+        while i<len(jd):
+            try:
+                validate_dni(jd[i]['dni'])
+                validate_iban(jd[i]['iban'])
+                validate_date(jd[i]['birthdate'])
+            except ValidationError as e:
+                error = {'error': e.message}
+                return Response(data=error, status=ST_409)
+            try:
+                Partners.objects.create(name=jd[i]['name'], last_name=jd[i]['last_name'], 
+                dni=jd[i]['dni'], phone1=jd[i]['phone1'], phone2=jd[i]['phone2'], birthdate=jd[i]['birthdate'], sex=jd[i]['sex'],
+                email=jd[i]['email'], address=jd[i]['address'], postal_code=jd[i]['postal_code'], township=jd[i]['township'],
+                province=jd[i]['province'], language=jd[i]['language'], iban=jd[i]['iban'],  account_holder=jd[i]['account_holder'],
+                state=jd[i]['state'], observations=jd[i]['observations'])
+                datos = {'message': "Success"}
+                return Response(data=datos, status=ST_201)
+            except IntegrityError:
+                error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
+                return Response(data=error, status=ST_409)
+            i=i+1
+
+        return JsonResponse(datos)
