@@ -146,7 +146,6 @@ class DonationView(View):
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
         Donation.objects.create(partner=partner, date=date,
                                 amount=amount, periodicity=periodicity)
-
         datos = {'message': "Success"}
         return JsonResponse(datos)
     
