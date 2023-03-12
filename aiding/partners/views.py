@@ -182,7 +182,7 @@ class DonationView(View):
         periodicity = jd['periodicity']
 
         try:
-            partner = Partners.objects.get(id=partner_id, state='Active')
+            partner = Partners.objects.get(id=partner_id, state='Activo')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)

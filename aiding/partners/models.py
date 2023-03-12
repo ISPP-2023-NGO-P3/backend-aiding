@@ -7,19 +7,19 @@ from enum import Enum
 
 class Partners(models.Model):
     STATE_CHOICES = (
-        ('Active', 'active'),
-        ('Inactive', 'inactive'),
+        ('Activo', 'active'),
+        ('Inactivo', 'inactive'),
     )
 
     SEX_CHOICES = (
-        ('Men', 'men'),
-        ('Women', 'women'),
-        ('None', 'none'),
+        ('Hombre', 'men'),
+        ('Mujer', 'women'),
+        ('Ninguno', 'none'),
     )
 
     LANGUAGE_CHOICES = (
-        ('Spanish', 'spanish'),
-        ('Catalan', 'catalan'),
+        ('Español', 'spanish'),
+        ('Catalán', 'catalan'),
     )
 
     name = models.CharField(max_length=100, blank=False)
