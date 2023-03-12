@@ -7,7 +7,7 @@ from django.forms import ValidationError
 from django.db import IntegrityError
 from django.http.response import JsonResponse
 from .models import Partners, Donation
-from validators import validate_date, validate_dni, validate_iban
+from .validators import validate_date, validate_dni, validate_iban
 
 from rest_framework import views
 from rest_framework.response import Response

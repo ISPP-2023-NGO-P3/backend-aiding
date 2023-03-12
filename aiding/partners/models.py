@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 from django.db import models
-from validators import validate_date, validate_dni, validate_iban
+from .validators import validate_date, validate_dni, validate_iban
 from django.db.models import Sum
 from enum import Enum
 
