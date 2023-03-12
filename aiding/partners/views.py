@@ -1,14 +1,10 @@
+from django.http import HttpResponse
+import xml.etree.ElementTree as ET
+from xml.dom.minidom import parseString 
 from datetime import datetime
-from django.views import View
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 import json
 from django.forms import ValidationError
-from django.db import IntegrityError
-from django.http.response import JsonResponse
-from .models import Partners, Donation
 from .validators import validate_date, validate_dni, validate_iban
-
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -17,6 +13,55 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,
 )
+from django.http.response import JsonResponse
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
+from .models import Partners, Donation
+from datetime import datetime
+from .validators import *
+
+
+def generate_receipt_xml(partner):
+    receipt = ET.Element("Recibo")
+    donator = ET.Element("donante")
+    receipt.append(donator)
+
+    name = ET.SubElement(donator,"nombre")
+    name.text=partner.name
+    surname = ET.SubElement(donator,"apellido")
+    surname.text = partner.last_name
+    dni = ET.SubElement(donator,"dni")
+    dni.text = partner.dni
+
+    iban = ET.Element("IBAN")
+    iban.text = partner.iban
+    receipt.append(iban)
+
+    concept = ET.Element("concepto")
+    concept.text = "Cuota Bosco Global"
+    receipt.append(concept)
+
+    amount = ET.Element("importe")
+    donation = Donation.objects.get(partner_id = partner.id)
+    amount.text = "placeholder" #str(donation.total_donation()) +"€"
+    receipt.append(amount)
+
+    xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
+    return parseString(xml_str).toxml(encoding='utf-8')
+
+    
+
+def download_receipt_xml(request,id):
+    try:
+        partner=Partners.objects.get(id=id)
+        response = HttpResponse(generate_receipt_xml(partner),content_type="application/xml")
+        todayDate=datetime.datetime.today().strftime('%Y-%m-%d')
+        response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + '_'+todayDate  +'_RECIBO.xml'
+        return response 
+    except Exception:
+        return HttpResponse(status=404)
 
 class PartnerManagement(views.APIView):
     @method_decorator(csrf_exempt)

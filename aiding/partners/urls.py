@@ -6,4 +6,5 @@ urlpatterns = [
     path('<int:id>', PartnerManagement.as_view()),
     path('donation/', DonationView.as_view()),
     path('donation/<int:id>',DonationView.as_view()),
+    path('<int:id>/receipt',download_receipt_xml),
 ]
