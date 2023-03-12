@@ -150,17 +150,10 @@ class CommunicationView(View):
         communications = Communication.objects
         if partner_id > 0:
             communications = communications.filter(partner=partner_id)
-            if len(list(communications.values()))>0:
-                if len(list(communications.values())) == 0:
-                    datos = {'message':"Communication not found"}
-                    return JsonResponse(datos)
-                if communication_id>0:
-                    communications = communications.filter(id=communication_id)
-                else:
-                    return JsonResponse(list(communications.values()), safe = False)
+            if communication_id>0:
+                communications = communications.filter(id=communication_id)
             else:
-                datos = {'message':"Partner not found"}
-                return JsonResponse(datos)
+                return JsonResponse(list(communications.values()), safe = False)
         return JsonResponse(list(communications.values()), safe = False)
 
     def post(self, request, partner_id):
