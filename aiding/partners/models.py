@@ -54,7 +54,7 @@ class Donation(models.Model):
     partner = models.OneToOneField(Partners, on_delete = models.CASCADE, related_name='donation')
     date = models.DateField()
     amount = models.DecimalField(decimal_places=2, max_digits=10)
-    periodicity = models.CharField(choices=[(p.name, p.value['name']) for p in DonationPeriodicity], max_length=20)
+    periodicity = models.CharField(choices=[(p.value['name'], p.name) for p in DonationPeriodicity], max_length=20)
 
     
     def total_donation(self):
