@@ -32,7 +32,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 MODULES = [
-    'base','information'
+    'base',
+    'information',
 ]
 
 INSTALLED_APPS = [

@@ -1,5 +1,7 @@
 from django.urls import path
-from .views import SectionView, AdvertisementView, MultimediaView, AdvertisementSectionView
+
+from .views import (AdvertisementSectionView, AdvertisementView,
+                    MultimediaView, ResourceView, SectionView)
 
 urlpatterns = [
     path('sections/', SectionView.as_view()),
@@ -14,4 +16,8 @@ urlpatterns = [
     # CUSTOM ENDPOINTS
 
      path('sections/<int:section_id>/advertisements/',AdvertisementSectionView.as_view()),
+
+    path('resources/', ResourceView.as_view()),
+    path('resources/<int:resource_id>', ResourceView.as_view())
+
 ]
