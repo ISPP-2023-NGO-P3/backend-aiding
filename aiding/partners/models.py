@@ -52,7 +52,6 @@ class Donation(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     periodicity = models.CharField(choices=[(p.value['name'], p.name) for p in DonationPeriodicity], max_length=20)
 
-    
     def total_donation(self):
 
         f_date = date.replace(day=31, month=12,  year=self.date.year)

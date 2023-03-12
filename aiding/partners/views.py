@@ -3,7 +3,6 @@ from django.http import HttpResponse
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString 
 from django.forms import ValidationError
-from .validators import validate_date, validate_dni, validate_iban
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -42,7 +41,6 @@ def generate_receipt_xml(partner):
     receipt.append(concept)
 
     amount = ET.Element("importe")
-    donation = Donation.objects.get(partner_id = partner.id)
     amount.text = "placeholder" #str(donation.total_donation()) +"€"
     receipt.append(amount)
 
@@ -55,7 +53,7 @@ def download_receipt_xml(request,id):
         response = HttpResponse(generate_receipt_xml(partner),content_type="application/xml")
         todayDate=datetime.datetime.today().strftime('%Y-%m-%d')
         response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + '_'+todayDate  +'_RECIBO.xml'
-        return response 
+        return response
     except Exception:
         return HttpResponse(status=404)
 
@@ -74,7 +72,6 @@ class PartnerManagement(views.APIView):
                 datos = {'message': "partner not found..."}
             return Response(data=datos, status=ST_404)
         else:
-
             partners = list(Partners.objects.values())
             if len(partners) > 0:
                 datos = {'partners': partners}
@@ -95,7 +92,7 @@ class PartnerManagement(views.APIView):
             return Response(data=error, status=ST_409)
 
         try:
-            Partners.objects.create(name=jd['name'], last_name=jd['last_name'], 
+            Partners.objects.create(name=jd['name'], last_name=jd['last_name'],
             dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
             email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
             province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
