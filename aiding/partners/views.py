@@ -47,9 +47,9 @@ def generate_receipt_xml(partner):
     xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
     return parseString(xml_str).toxml(encoding='utf-8')
 
-def download_receipt_xml(request,id):
+def download_receipt_xml(request,partner_id):
     try:
-        partner=Partners.objects.get(id=id)
+        partner=Partners.objects.get(id=partner_id)
         response = HttpResponse(generate_receipt_xml(partner),content_type="application/xml")
         todayDate=datetime.datetime.today().strftime('%Y-%m-%d')
         response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + '_'+todayDate  +'_RECIBO.xml'
@@ -62,9 +62,9 @@ class PartnerManagement(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
-    def get(self, request, id = 0):
-        if (id > 0):
-            partners = list(Partners.objects.filter(id=id).values())
+    def get(self, request, partner_id = 0):
+        if (partner_id > 0):
+            partners = list(Partners.objects.filter(id=partner_id).values())
             if len(partners) > 0:
                 partners = partners[0]
                 return Response(data=partners, status=ST_200)
@@ -103,11 +103,11 @@ class PartnerManagement(views.APIView):
             error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
             return Response(data=error, status=ST_409)
 
-    def put(self, request, id):
+    def put(self, request, partner_id):
         jd = json.loads(request.body)
-        partners = list(Partners.objects.filter(id=id).values())
+        partners = list(Partners.objects.filter(id=partner_id).values())
         if len(partners) > 0:
-            partner = Partners.objects.get(id=id)
+            partner = Partners.objects.get(id=partner_id)
             try:
                 validate_dni(jd['dni'])
                 validate_iban(jd['iban'])
@@ -149,9 +149,9 @@ class DonationView(View):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id):
-        partner = Partners.objects.get(id=id)
-        if id > 0:
+    def get(self, request, partner_id):
+        partner = Partners.objects.get(id=partner_id)
+        if partner_id > 0:
             donations = list(Donation.objects.filter(partner=partner).values())
             if len(donations) > 0:
                 donation = donations[0]
@@ -167,13 +167,13 @@ class DonationView(View):
                 datos = {'message': "Donations not found..."}
             return JsonResponse(donations, safe=False)
         
-    def post(self, request, id):
+    def post(self, request, partner_id):
         jd = json.loads(request.body)
         amount = jd['amount']
         periodicity = jd['periodicity']
 
         try:
-            partner = Partners.objects.get(id=id, state='Activo')
+            partner = Partners.objects.get(id=partner_id, state='Activo')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)
@@ -185,17 +185,17 @@ class DonationView(View):
         datos = {'message': "Success"}
         return JsonResponse(datos)
     
-    def delete(self, request, id):
+    def delete(self, request, partner_id):
         try:
-            donation = Donation.objects.get(id=id)
+            donation = Donation.objects.get(id=partner_id)
             donation.delete()
             datos = {'message': "Success"}
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
     
-def get_don_part(request, id):
-    partner = Partners.objects.get(id=id, state='Activo')
+def get_don_part(request, partner_id):
+    partner = Partners.objects.get(id=partner_id, state='Activo')
     donation = Donation.objects.filter(partner=partner)
     datos = list(donation.values())[0]
     return JsonResponse(datos, safe=False)
