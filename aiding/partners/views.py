@@ -1,14 +1,7 @@
-from datetime import datetime
-import json
-from django.views import View
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import HttpResponse
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString 
-from datetime import datetime
-import json
 from django.forms import ValidationError
 from .validators import validate_date, validate_dni, validate_iban
 from rest_framework import views
@@ -19,18 +12,14 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,
 )
-from django.http.response import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
-
 from django.http.response import JsonResponse
 from .models import Partners, Donation, Communication
-from .models import Partners, Donation
 from datetime import datetime
-from .validators import *
-
+from .validators import validate_date, validate_dni, validate_iban
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
@@ -59,8 +48,6 @@ def generate_receipt_xml(partner):
 
     xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
     return parseString(xml_str).toxml(encoding='utf-8')
-
-    
 
 def download_receipt_xml(request,id):
     try:
@@ -159,7 +146,6 @@ class PartnerManagement(views.APIView):
             datos = {'message': "Partner not found..."}
         return Response(data=error, status=ST_409)
     
-
 class DonationView(View):
 
     @method_decorator(csrf_exempt)
@@ -217,8 +203,6 @@ def get_don_part(request, id):
     datos = list(donation.values())[0]
     return JsonResponse(datos, safe=False)
     
-
-
 class CommunicationView(View):
     
     @method_decorator(csrf_exempt)
@@ -272,7 +256,6 @@ class CommunicationView(View):
             datos = {'message': "Communication not found..."}
         return JsonResponse(datos)
         
-    
     def delete(self, request, communication_id, partner_id):
         communications = Communication.objects.filter(partner=partner_id)
         if len(list(communications.values())) > 0:

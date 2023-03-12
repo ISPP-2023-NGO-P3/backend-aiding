@@ -2,8 +2,6 @@ from datetime import date
 from enum import Enum
 from django.db import models
 from .validators import validate_date, validate_dni, validate_iban
-from django.db.models import Sum
-from enum import Enum
 
 class Partners(models.Model):
     STATE_CHOICES = (
@@ -39,7 +37,6 @@ class Partners(models.Model):
     account_holder = models.CharField(max_length=100, blank=False)
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
 
-    
 class DonationPeriodicity(Enum):
     MONTHLY = {'name': 'MENSUAL', 'days': 30}
     QUARTERLY = {'name': 'TRIMESTRAL', 'days': 90}
