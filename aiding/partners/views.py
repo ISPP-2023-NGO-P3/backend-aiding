@@ -284,11 +284,11 @@ class ImportCSVView(views.APIView):
                 email=jd[i]['email'], address=jd[i]['address'], postal_code=jd[i]['postal_code'], township=jd[i]['township'],
                 province=jd[i]['province'], language=jd[i]['language'], iban=jd[i]['iban'],  account_holder=jd[i]['account_holder'],
                 state=jd[i]['state'])
-                datos = {'message': "Success"}
-                return Response(data=datos, status=ST_201)
+
             except IntegrityError:
                 error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
                 return Response(data=error, status=ST_409)
             i=i+1
-
+        datos = {'message': "Success"}
+                #return Response(data=datos, status=ST_201)
         return JsonResponse(datos)
