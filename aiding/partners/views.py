@@ -279,11 +279,11 @@ class ImportCSVView(views.APIView):
                 error = {'error': e.message}
                 return Response(data=error, status=ST_409)
             try:
-                Partners.objects.create(name=jd[i]['name'], last_name=jd[i]['last_name'], 
+                Partners.objects.create(name=jd[i]['name'], last_name=jd[i]['last_name'],
                 dni=jd[i]['dni'], phone1=jd[i]['phone1'], phone2=jd[i]['phone2'], birthdate=jd[i]['birthdate'], sex=jd[i]['sex'],
                 email=jd[i]['email'], address=jd[i]['address'], postal_code=jd[i]['postal_code'], township=jd[i]['township'],
                 province=jd[i]['province'], language=jd[i]['language'], iban=jd[i]['iban'],  account_holder=jd[i]['account_holder'],
-                state=jd[i]['state'], observations=jd[i]['observations'])
+                state=jd[i]['state'])
                 datos = {'message': "Success"}
                 return Response(data=datos, status=ST_201)
             except IntegrityError:
