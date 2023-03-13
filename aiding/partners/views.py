@@ -1,4 +1,5 @@
 from datetime import datetime
+import statistics
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -107,28 +108,28 @@ class PartnerManagement(views.APIView):
         return Response(data=error, status=ST_409)
     
 
-class DonationView(View):
+class DonationView(views.APIView):
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, id=0):
-        if id > 0:
-            donations = list(Donation.objects.filter(id=id).values())
+    def get(self, donation_id=0):
+        if donation_id > 0:
+            donations = list(Donation.objects.filter(id=donation_id).values())
             if len(donations) > 0:
                 donation = donations[0]
                 datos = {'donation': donation}
             else:
                 datos = {'message': "Donation not found..."}
-            return JsonResponse(donation, safe=False)
+            return Response(data=datos, status=ST_404)
         else:
             donations = list(Donation.objects.values())
             if len(donations) > 0:
                 datos = {'donations': donations}
             else:
                 datos = {'message': "Donations not found..."}
-            return JsonResponse(donations, safe=False)
+            return Response(donations,  status=ST_404)
         
     def post(self, request):
         jd = json.loads(request.body)
@@ -140,21 +141,22 @@ class DonationView(View):
             partner = Partners.objects.get(id=partner_id, state='Active')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
-            return JsonResponse(datos, status=400)
+            return Response(datos, status=ST_404)
 
         date_str = jd['date']
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
         Donation.objects.create(partner=partner, date=date,
                                 amount=amount, periodicity=periodicity)
         datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return Response(data=datos, status=ST_201)
     
     def delete(self, request, id):
         try:
             donation = Donation.objects.get(id=id)
             donation.delete()
             datos = {'message': "Success"}
+            return Response(data=datos, status=ST_200)
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
-        return JsonResponse(datos)
+            return Response(data=datos, status=ST_409)
 
