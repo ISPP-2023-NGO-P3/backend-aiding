@@ -17,9 +17,10 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from django.http.response import JsonResponse
-from .models import Partners, Donation, Communication
+from .models import Partners, Donation, Communication, CSVFile
 from datetime import datetime
 from .validators import *
+import csv
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
@@ -267,28 +268,32 @@ class ImportCSVView(views.APIView):
         return super().dispatch(request, *args, **kwargs)
     
     def post(self, request):
-        jd = json.loads(request.body)
+        file=request.FILES["selectedFile"]
+        obj=CSVFile.objects.create(file=file)
+        path = str(obj.file)
+        with open(path) as csvFile:
+            csvReader=csv.DictReader(csvFile,delimiter=";")
+            for jd in csvReader:
+                
+                try:
+                    validate_dni(jd['dni'])
+                    validate_iban(jd['iban'])
+                    validate_date(jd['birthdate'])
+                except ValidationError as e:
+                    obj.delete()
+                    error = {'error': e.message}
+                    return Response(data=error, status=ST_409)
+                try:
+                    Partners.objects.create(name=jd['ï»¿name'], last_name=jd['last_name'],
+                    dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
+                    email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
+                    province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
+                    state=jd['state']) 
 
-        i=0
-        while i<len(jd):
-            try:
-                validate_dni(jd[i]['dni'])
-                validate_iban(jd[i]['iban'])
-                validate_date(jd[i]['birthdate'])
-            except ValidationError as e:
-                error = {'error': e.message}
-                return Response(data=error, status=ST_409)
-            try:
-                Partners.objects.create(name=jd[i]['name'], last_name=jd[i]['last_name'],
-                dni=jd[i]['dni'], phone1=jd[i]['phone1'], phone2=jd[i]['phone2'], birthdate=jd[i]['birthdate'], sex=jd[i]['sex'],
-                email=jd[i]['email'], address=jd[i]['address'], postal_code=jd[i]['postal_code'], township=jd[i]['township'],
-                province=jd[i]['province'], language=jd[i]['language'], iban=jd[i]['iban'],  account_holder=jd[i]['account_holder'],
-                state=jd[i]['state'])
-
-            except IntegrityError:
-                error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
-                return Response(data=error, status=ST_409)
-            i=i+1
+                except IntegrityError:
+                    obj.delete()
+                    error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
+                    return Response(data=error, status=ST_409)
+        obj.delete()
         datos = {'message': "Success"}
-                #return Response(data=datos, status=ST_201)
         return JsonResponse(datos)

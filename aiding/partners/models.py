@@ -73,3 +73,6 @@ class Communication(models.Model):
     date = models.DateField(null = False)
     communication_type = models.CharField(max_length=25, choices= COMMUNICATION_TYPE, blank= False)
     description = models.TextField(blank= False, null=False,max_length=255)
+
+class CSVFile(models.Model):
+    file = models.FileField(upload_to="import_partners")
