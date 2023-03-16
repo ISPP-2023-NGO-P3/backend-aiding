@@ -163,14 +163,23 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 return Response(data=datos, status=ST_404)
         else:
             try:
-                sections = Section.objects.filter(active=True)
+                sections = Section.objects.all()
                 if len(sections) > 0:
                     advertisements = []
                     for sec in sections:
                         section_id = sec.__getattribute__("id")
                         advertisements_with_section_id = Advertisement.objects.filter(
                             section_id=section_id
-                        ).values()
+                        ).values(
+                            "id",
+                            "title",
+                            "abstract",
+                            "body",
+                            "url",
+                            "section_id__name",
+                            "front_page",
+                            "creation_date"
+                        )
                         for adv in advertisements_with_section_id:
                             advertisements.append(adv)
                     return Response(data=advertisements, status=ST_200)
@@ -182,23 +191,29 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 return Response(data=datos, status=ST_404)
 
     def post(self, request):
-        jd = json.loads(request.body)
         try:
-            sec = Section.objects.filter(id=jd["section_id"])
-            if len(sec) > 0:
-                sec = sec[0]
-                Advertisement.objects.create(
-                    title=jd["title"],
-                    description=jd["description"],
-                    url=jd["url"],
-                    section=sec,
-                    front_page=jd["front_page"],
-                )
-                datos = {"message": "Success"}
-                return Response(data=datos, status=ST_201)
-            else:
-                datos = {"message": "Section not found"}
-                return Response(data=datos, status=ST_404)
+            print(str(request.POST))
+            section_id = request.POST.get("section_id")
+            title = request.POST.get("title")
+            abstract = request.POST.get("abstract")
+            body = request.POST.get("body")
+            url = request.POST.get("url")
+            section = Section.objects.get(id=section_id)
+            front_page = request.FILES.get("front_page")
+            
+            Advertisement.objects.create(
+                title=title,
+                abstract=abstract,
+                body=body,
+                url=url,
+                section=section,
+                front_page=front_page,
+            )
+            datos = {"message": "Success"}
+            return Response(data=datos, status=ST_201)
+        except Section.DoesNotExist:
+            datos = {"message": "Section not found"}
+            return Response(data=datos, status=ST_404)
         except IntegrityError:
             error = {
                 "error": "This title's advertisement was added into the page, please create another different"
@@ -217,7 +232,8 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 advertisement = Advertisement.objects.get(id=advertisement_id)
                 try:
                     advertisement.title = jd["title"]
-                    advertisement.description = jd["description"]
+                    advertisement.abstract = jd["asbtract"]
+                    advertisement.body = jd["body"]
                     advertisement.url = jd["url"]
                     advertisement.section = sec
                     advertisement.front_page = jd["front_page"]
@@ -259,7 +275,14 @@ class AdvertisementSectionView(CsrfExemptMixin, views.APIView):
                 section_id = section.get().__getattribute__("id")
 
                 advertisements_with_section_id = list(
-                    Advertisement.objects.filter(section_id=section_id).values()
+                    Advertisement.objects.filter(section_id=section_id).values(
+                            "id",
+                            "title",
+                            "abstract",
+                            "url",
+                            "section_id__name",
+                            "front_page",
+                            "creation_date")
                 )
                 return Response(data=advertisements_with_section_id, status=ST_200)
             except Exception:
