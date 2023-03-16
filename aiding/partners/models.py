@@ -5,19 +5,19 @@ from .validators import validate_date, validate_dni, validate_iban
 
 class Partners(models.Model):
     STATE_CHOICES = (
-        ('Activo', 'active'),
-        ('Inactivo', 'inactive'),
+        ('Activo','Activo'),
+        ('Activo','Inactivo'),
     )
 
     SEX_CHOICES = (
-        ('Hombre', 'men'),
-        ('Mujer', 'women'),
-        ('Ninguno', 'none'),
+        ('men','Hombre'),
+        ('women','Mujer'),
+        ('none','Ninguno'),
     )
 
     LANGUAGE_CHOICES = (
-        ('Español', 'spanish'),
-        ('Catalán', 'catalan'),
+        ('spanish','Español'),
+        ('catalan','Catalán'),
     )
 
     name = models.CharField(max_length=100, blank=False)
@@ -35,7 +35,7 @@ class Partners(models.Model):
     language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES, blank=False)
     iban = models.CharField(max_length=34, unique=True, blank=False, validators=[validate_iban])
     account_holder = models.CharField(max_length=100, blank=False)
-    state = models.CharField(max_length=8, choices=STATE_CHOICES, default='active')
+    state = models.CharField(max_length=8, choices=STATE_CHOICES, default='Activo')
 
 class DonationPeriodicity(Enum):
     MONTHLY = {'name': 'MENSUAL', 'days': 30}
@@ -63,13 +63,13 @@ class Donation(models.Model):
 
 class Communication(models.Model):
     COMMUNICATION_TYPE = (
-            ('TELEPHONIC' , 'TELEFÓNICA'),
-            ('TELEMATIC' , 'TELEMÁTICA'),
-            ('PERSONAL' , 'PERSONAL'),
+            ('TELEFÓNICA', 'TELEPHONIC'),
+            ('TELEMÁTICA', 'TELEMATIC'),
+            ('PERSONAL', 'PERSONAL'),
             ('EMAIL' ,'EMAIL'),
         )
 
     partner = models.ForeignKey(Partners, on_delete= models.CASCADE, related_name='communication')
     date = models.DateField(null = False)
-    communication_type = models.CharField(max_length=25, choices= COMMUNICATION_TYPE, blank= False)
+    communication_type = models.CharField(max_length=25, choices= COMMUNICATION_TYPE, blank=False)
     description = models.TextField(blank= False, null=False,max_length=255)
