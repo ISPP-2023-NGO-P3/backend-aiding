@@ -17,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from django.http.response import JsonResponse
 from .models import Partners, Donation, Communication
-from datetime import datetime
+import datetime
 from .validators import validate_date, validate_dni, validate_iban
 
 def generate_receipt_xml(partner):
@@ -152,9 +152,9 @@ class DonationView(View):
     def get(self, request, partner_id):
         partner = Partners.objects.get(id=partner_id)
         if partner_id > 0:
-            donations = list(Donation.objects.filter(partner=partner).values())
-            if len(donations) > 0:
-                donation = donations[0]
+            donation = list(Donation.objects.filter(partner=partner).values())
+            if len(donation) > 0:
+                donation = donation[0]
             return JsonResponse(donation, safe=False)
         else:
             donations = list(Donation.objects.values())
