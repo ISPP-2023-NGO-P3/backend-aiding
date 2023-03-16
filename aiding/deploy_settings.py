@@ -12,7 +12,7 @@ db_url = env('DATABASE_URL')
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'aiding_db',
         'USER': 'root',
         'PASSWORD': + root_password ,
