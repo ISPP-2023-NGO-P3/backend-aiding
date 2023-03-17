@@ -34,7 +34,6 @@ class SectionView(CsrfExemptMixin, views.APIView):
             sections = list(Section.objects.filter(active=True).values())
             lenght = len(sections)
             if lenght > 0:
-                sections = sections[lenght - 2 : lenght]
                 return Response(data=sections, status=ST_200)
             else:
                 datos = {"message": "sections not found..."}
@@ -42,8 +41,15 @@ class SectionView(CsrfExemptMixin, views.APIView):
 
     def post(self, request):
         jd = json.loads(request.body)
+        name = jd["name"]
+
         try:
-            Section.objects.create(name=jd["name"], active=jd["active"])
+            active = jd["active"]
+        except KeyError:
+            active = True
+
+        try:
+            Section.objects.create(name=name, active=active)
             datos = {"message": "Success"}
             return Response(data=datos, status=ST_201)
         except IntegrityError:
@@ -153,7 +159,15 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
     def get(self, request, advertisement_id=0):
         if advertisement_id > 0:
             advertisement = list(
-                Advertisement.objects.filter(id=advertisement_id).values()
+                Advertisement.objects.filter(id=advertisement_id).values("id",
+                            "title",
+                            "abstract",
+                            "body",
+                            "url",
+                            "section_id__name",
+                            "section_id",
+                            "front_page",
+                            "creation_date")
             )
             if len(advertisement) > 0:
                 advertisement = advertisement[0]
