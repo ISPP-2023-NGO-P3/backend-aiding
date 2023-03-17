@@ -14,7 +14,7 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
-    
+  
 class User(AbstractBaseUser):
     username = models.CharField(blank=False, null=False, max_length=100, unique=True)
     is_admin = models.BooleanField(default=False)
