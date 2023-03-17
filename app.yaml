@@ -1,7 +1,7 @@
 runtime: python310
 instance_class: F2
 service: backend
-entrypoint: gunicorn -b :$PORT aiding.wsgi:application --pythonpath './aiding' && python3 manage.py migrate
+entrypoint: gunicorn -b :$PORT aiding.wsgi:application --pythonpath './aiding' 
 handlers:
 - url: /.*
   script: auto
