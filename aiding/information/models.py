@@ -39,14 +39,20 @@ class Multimedia(models.Model):
     )
     description = models.TextField(blank=True, null=True, max_length=255)
 
+class ResourceType(models.Model):
+    name = models.CharField(unique=True, blank=False, null=False, max_length=100)
 
 class Resource(models.Model):
     title = models.CharField(blank=False, null=False, max_length=100)
     description = models.CharField(blank=False, max_length=255)
-
+    contact_phone = models.CharField(max_length=15, unique=True, blank=False)
     street = models.CharField(blank=False, max_length=255)
     number = models.CharField(null=True, blank=True, max_length=10)
     city = models.CharField(blank=False, max_length=100)
+    resource_type = models.ForeignKey(
+        ResourceType, related_name="resource_type", on_delete=models.CASCADE
+    )
+
     additional_comments = models.CharField(blank=True, max_length=255)
 
     latitude = models.FloatField(
