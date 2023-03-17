@@ -206,7 +206,6 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
 
     def post(self, request):
         try:
-            print(str(request.POST))
             section_id = request.POST.get("section_id")
             title = request.POST.get("title")
             abstract = request.POST.get("abstract")
@@ -235,22 +234,30 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             return Response(data=error, status=ST_409)
 
     def put(self, request, advertisement_id):
-        jd = json.loads(request.body)
+
+        section_id = request.POST.get("section_id")
+        title = request.POST.get("title")
+        abstract = request.POST.get("abstract")
+        body = request.POST.get("body")
+        url = request.POST.get("url")
+        front_page = request.FILES.get("front_page")
+
         advertisements = list(
             Advertisement.objects.filter(id=advertisement_id).values()
         )
         if len(advertisements) > 0:
-            sec = Section.objects.filter(id=jd["section_id"])
+            sec = Section.objects.filter(id=section_id)
             if len(sec) > 0:
                 sec = sec[0]
                 advertisement = Advertisement.objects.get(id=advertisement_id)
                 try:
-                    advertisement.title = jd["title"]
-                    advertisement.abstract = jd["asbtract"]
-                    advertisement.body = jd["body"]
-                    advertisement.url = jd["url"]
+                    advertisement.title = title
+                    advertisement.abstract = abstract
+                    advertisement.body = body
+                    advertisement.url = url
                     advertisement.section = sec
-                    advertisement.front_page = jd["front_page"]
+                    if front_page is not None:
+                        advertisement.front_page = front_page
                     advertisement.save()
                     datos = {"message": "Success"}
                     return Response(data=datos, status=ST_200)
