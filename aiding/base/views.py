@@ -75,7 +75,6 @@ class UserView(views.APIView):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
         auth_user = request.user
-        print(auth_user)
         if auth_user.is_authenticated and auth_user.is_admin:            
             User.objects.create(username=jd['username'],password=make_password(jd['password']))
             data = {'message': "Success"}
