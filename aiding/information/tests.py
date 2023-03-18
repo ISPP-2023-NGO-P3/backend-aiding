@@ -138,11 +138,91 @@ class AdvertisementTests(APITestCase):
     ################################################## POSTS ##################################################
 
     def test_create_positive_advertisement_status_CREATED(self):
-        section = JSONRenderer().render({"name" : "Seccion 1", "active" : True})
-        data = JSONRenderer().render({"title": "Anuncio 1", "abstract": "Resumen 1", "body": "Descripcion 1",
-                                      "url": "https://www.google.com", "section_id": section}).decode("utf-8")
+        section = Section.objects.create(name="Seccion 1", active=True)
+        data = {"title": "Anuncio 1", "abstract": "Resumen 1", "body": "Descripcion 1",
+                                      "url": "https://www.google.com", "section_id": section.id}
         response = self.client.post(
-            '/information/advertisements/', data=data, content_type='application/json')
-        print(response.data)
-        print(data)
-        #Revisar porque no funciona correctamente el test
+            '/information/advertisements/', data=data)
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_create_negative_advertisement_status_CONFLICT(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        data = {"title": "Anuncio 1", "abstract": "Resumen 1", "body": "Descripcion 1",
+                "url": "https://www.google.com", "section_id": section.id}
+        response = self.client.post(
+            '/information/advertisements/', data=data)
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {
+            "error": "This title's advertisement was added into the page, please create another different"}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_create_negative_advertisement_section_NOT_FOUND(self):
+        data = {"title": "Anuncio 1", "abstract": "Resumen 1", "body": "Descripcion 1",
+                "url": "https://www.google.com", "section_id": 1}
+        response = self.client.post(
+            '/information/advertisements/', data=data)
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Section not found'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## PUTS ##################################################
+
+    def test_update_positive_advertisement_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        
+        data = {"title": "Anuncio 2", "abstract": "Resumen 2", "body": "Descripcion 2",
+                "url": "https://www.google.com", "section_id": section.id}
+        response = self.client.put(
+            f'/information/advertisements/{advertisement.id}', data=data)
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_advertisement_status_CONFLICT(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 2", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        data = {"title": "Anuncio 1", "abstract": "Resumen 2", "body": "Descripcion 2",
+                "url": "https://www.google.com", "section_id": section.id}
+        response = self.client.put(
+            f'/information/advertisements/{advertisement.id}', data=data)
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {"error": "This title's advertisement was added into the page, please select another different"}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_update_negative_advertisement_NOT_FOUND(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        data = {"title": "Anuncio 2", "abstract": "Resumen 2", "body": "Descripcion 2",
+                "url": "https://www.google.com", "section_id": section.id}
+        response = self.client.put(
+            f'/information/advertisements/1', data=data)
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Advertisement not found'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## DELETES ##################################################
+
+    def test_delete_positive_advertisement_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        response = self.client.delete(
+            f'/information/advertisements/{advertisement.id}')
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_delete_negative_advertisement_status_NOT_FOUND(self):
+        response = self.client.delete('/information/advertisements/1')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Advertisement not found'}
+        self.assertEqual(response.data, dataMessage)
