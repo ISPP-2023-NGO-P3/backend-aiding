@@ -34,7 +34,6 @@ class SectionView(CsrfExemptMixin, views.APIView):
             sections = list(Section.objects.filter(active=True).values())
             lenght = len(sections)
             if lenght > 0:
-                sections = sections[lenght - 2 : lenght]
                 return Response(data=sections, status=ST_200)
             else:
                 datos = {"message": "sections not found..."}
@@ -42,8 +41,15 @@ class SectionView(CsrfExemptMixin, views.APIView):
 
     def post(self, request):
         jd = json.loads(request.body)
+        name = jd["name"]
+
         try:
-            Section.objects.create(name=jd["name"], active=jd["active"])
+            active = jd["active"]
+        except KeyError:
+            active = True
+
+        try:
+            Section.objects.create(name=name, active=active)
             datos = {"message": "Success"}
             return Response(data=datos, status=ST_201)
         except IntegrityError:
@@ -153,7 +159,15 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
     def get(self, request, advertisement_id=0):
         if advertisement_id > 0:
             advertisement = list(
-                Advertisement.objects.filter(id=advertisement_id).values()
+                Advertisement.objects.filter(id=advertisement_id).values("id",
+                            "title",
+                            "abstract",
+                            "body",
+                            "url",
+                            "section_id__name",
+                            "section_id",
+                            "front_page",
+                            "creation_date")
             )
             if len(advertisement) > 0:
                 advertisement = advertisement[0]
@@ -163,14 +177,23 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 return Response(data=datos, status=ST_404)
         else:
             try:
-                sections = Section.objects.filter(active=True)
+                sections = Section.objects.all()
                 if len(sections) > 0:
                     advertisements = []
                     for sec in sections:
                         section_id = sec.__getattribute__("id")
                         advertisements_with_section_id = Advertisement.objects.filter(
                             section_id=section_id
-                        ).values()
+                        ).values(
+                            "id",
+                            "title",
+                            "abstract",
+                            "body",
+                            "url",
+                            "section_id__name",
+                            "front_page",
+                            "creation_date"
+                        )
                         for adv in advertisements_with_section_id:
                             advertisements.append(adv)
                     return Response(data=advertisements, status=ST_200)
@@ -182,23 +205,28 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 return Response(data=datos, status=ST_404)
 
     def post(self, request):
-        jd = json.loads(request.body)
         try:
-            sec = Section.objects.filter(id=jd["section_id"])
-            if len(sec) > 0:
-                sec = sec[0]
-                Advertisement.objects.create(
-                    title=jd["title"],
-                    description=jd["description"],
-                    url=jd["url"],
-                    section=sec,
-                    front_page=jd["front_page"],
-                )
-                datos = {"message": "Success"}
-                return Response(data=datos, status=ST_201)
-            else:
-                datos = {"message": "Section not found"}
-                return Response(data=datos, status=ST_404)
+            section_id = request.POST.get("section_id")
+            title = request.POST.get("title")
+            abstract = request.POST.get("abstract")
+            body = request.POST.get("body")
+            url = request.POST.get("url")
+            section = Section.objects.get(id=section_id)
+            front_page = request.FILES.get("front_page")
+            
+            Advertisement.objects.create(
+                title=title,
+                abstract=abstract,
+                body=body,
+                url=url,
+                section=section,
+                front_page=front_page,
+            )
+            datos = {"message": "Success"}
+            return Response(data=datos, status=ST_201)
+        except Section.DoesNotExist:
+            datos = {"message": "Section not found"}
+            return Response(data=datos, status=ST_404)
         except IntegrityError:
             error = {
                 "error": "This title's advertisement was added into the page, please create another different"
@@ -206,21 +234,30 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             return Response(data=error, status=ST_409)
 
     def put(self, request, advertisement_id):
-        jd = json.loads(request.body)
+
+        section_id = request.POST.get("section_id")
+        title = request.POST.get("title")
+        abstract = request.POST.get("abstract")
+        body = request.POST.get("body")
+        url = request.POST.get("url")
+        front_page = request.FILES.get("front_page")
+
         advertisements = list(
             Advertisement.objects.filter(id=advertisement_id).values()
         )
         if len(advertisements) > 0:
-            sec = Section.objects.filter(id=jd["section_id"])
+            sec = Section.objects.filter(id=section_id)
             if len(sec) > 0:
                 sec = sec[0]
                 advertisement = Advertisement.objects.get(id=advertisement_id)
                 try:
-                    advertisement.title = jd["title"]
-                    advertisement.description = jd["description"]
-                    advertisement.url = jd["url"]
+                    advertisement.title = title
+                    advertisement.abstract = abstract
+                    advertisement.body = body
+                    advertisement.url = url
                     advertisement.section = sec
-                    advertisement.front_page = jd["front_page"]
+                    if front_page is not None:
+                        advertisement.front_page = front_page
                     advertisement.save()
                     datos = {"message": "Success"}
                     return Response(data=datos, status=ST_200)
@@ -259,7 +296,14 @@ class AdvertisementSectionView(CsrfExemptMixin, views.APIView):
                 section_id = section.get().__getattribute__("id")
 
                 advertisements_with_section_id = list(
-                    Advertisement.objects.filter(section_id=section_id).values()
+                    Advertisement.objects.filter(section_id=section_id).values(
+                            "id",
+                            "title",
+                            "abstract",
+                            "url",
+                            "section_id__name",
+                            "front_page",
+                            "creation_date")
                 )
                 return Response(data=advertisements_with_section_id, status=ST_200)
             except Exception:
