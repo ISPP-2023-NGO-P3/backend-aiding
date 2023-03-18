@@ -155,9 +155,9 @@ class DonationView(View):
     def get(self, request, partner_id):
         partner = Partners.objects.get(id=partner_id)
         if partner_id > 0:
-            donations = list(Donation.objects.filter(partner=partner).values())
-            if len(donations) > 0:
-                donation = donations[0]
+            donation = list(Donation.objects.filter(partner=partner).values())
+            if len(donation) > 0:
+                donation = donation[0]
             return JsonResponse(donation, safe=False)
         else:
             donations = list(Donation.objects.values())
@@ -271,35 +271,53 @@ class ImportCSVView(views.APIView):
     def post(self, request):
         file=request.FILES["selectedFile"]
         obj=CSVFile.objects.create(file=file)
-        path = str(obj.file)
-        print(path)
+        path = "media/"+str(obj.file)
+        ids_list=[]
         with open(path) as csvFile:
             csvReader=csv.DictReader(csvFile,delimiter=";")
             contador_filas=2
             for jd in csvReader:
-                
                 try:
                     validate_dni(jd['dni'])
                     validate_iban(jd['iban'])
                     validate_date(jd['birthdate'])
+                    validate_name(jd['ï»¿name'])
+                    validate_last_name(jd['last_name'])
+                    validate_dni_blank(jd['dni'])
+                    validate_phone1(jd['phone1'])
+                    validate_birthdate(jd['birthdate'])
+                    validate_address(jd['address'])
+                    validate_postal_code(jd['postal_code'])
+                    validate_township(jd['township'])
+                    validate_province(jd['province'])
+                    validate_language(jd['language'])
+                    validate_iban_blank(jd['iban'])
+                    validate_account_holder(jd['account_holder'])
                 except ValidationError as e:
                     csvFile.close()
                     obj.delete()
                     remove(path)
+                    for id in ids_list:
+                        partner=Partners.objects.get(id=id)
+                        partner.delete()
                     error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
                     return Response(data=error, status=ST_409)
                 try:
-                    Partners.objects.create(name=jd['ï»¿name'], last_name=jd['last_name'],
+                    new_partner=Partners.objects.create(name=jd['ï»¿name'], last_name=jd['last_name'],
                     dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
                     email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
                     province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
                     state=jd['state']) 
+                    ids_list.append(new_partner.id)
 
                 except IntegrityError:
                     csvFile.close()
                     obj.delete()
                     remove(path)
-                    error = {'error': "Ya hay un socio con algún campo igual que uno a existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
+                    for id in ids_list:
+                        partner=Partners.objects.get(id=id)
+                        partner.delete()
+                    error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
                     return Response(data=error, status=ST_409)
                 
                 contador_filas=contador_filas+1
