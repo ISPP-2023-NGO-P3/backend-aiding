@@ -21,6 +21,7 @@ from .models import Partners, Donation, Communication, CSVFile
 from datetime import datetime
 from .validators import *
 import csv
+from os import remove
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
@@ -271,8 +272,10 @@ class ImportCSVView(views.APIView):
         file=request.FILES["selectedFile"]
         obj=CSVFile.objects.create(file=file)
         path = str(obj.file)
+        print(path)
         with open(path) as csvFile:
             csvReader=csv.DictReader(csvFile,delimiter=";")
+            contador_filas=2
             for jd in csvReader:
                 
                 try:
@@ -280,8 +283,10 @@ class ImportCSVView(views.APIView):
                     validate_iban(jd['iban'])
                     validate_date(jd['birthdate'])
                 except ValidationError as e:
+                    csvFile.close()
                     obj.delete()
-                    error = {'error': e.message}
+                    remove(path)
+                    error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
                     return Response(data=error, status=ST_409)
                 try:
                     Partners.objects.create(name=jd['ï»¿name'], last_name=jd['last_name'],
@@ -291,9 +296,15 @@ class ImportCSVView(views.APIView):
                     state=jd['state']) 
 
                 except IntegrityError:
+                    csvFile.close()
                     obj.delete()
-                    error = {'error': "There is already a partner with a field equal to the one you are trying to add, please check the data."}
+                    remove(path)
+                    error = {'error': "Ya hay un socio con algún campo igual que uno a existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
                     return Response(data=error, status=ST_409)
+                
+                contador_filas=contador_filas+1
+        csvFile.close()
         obj.delete()
+        remove(path)
         datos = {'message': "Success"}
         return JsonResponse(datos)
