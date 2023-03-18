@@ -23,7 +23,7 @@ def validate_date(date):
     if age < 18:
         raise ValidationError("Debe ser mayor de edad.")
 
-#Estos validadores están hechos porque el blank=false solo se valida cuando es un formulario y hace falta para 
+#Estos validadores están hechos porque el blank=false solo se valida cuando es un formulario y hace falta para
 #la importación de socios
 
 def validate_name(name):
@@ -33,27 +33,27 @@ def validate_name(name):
 def validate_last_name(last_name):
     if len(last_name) <1:
         raise ValidationError('Los apellidos no puede estar vacíos')
-    
+
 def validate_dni_blank(dni):
     if len(dni) <1:
         raise ValidationError('El dni no puede estar vacío')
-    
+
 def validate_phone1(phone1):
     if len(phone1) <1:
         raise ValidationError('El teléfono no puede estar vacío')
-    
+
 def validate_birthdate(birthdate):
     if len(birthdate) <1:
         raise ValidationError('El cumpleaños no puede estar vacío')
-  
+
 def validate_address(address):
     if len(address) <1:
         raise ValidationError('La dirección no puede estar vacía')
-    
+
 def validate_postal_code(postal_code):
     if len(postal_code) <1:
         raise ValidationError('El código postal no puede estar vacío')
- 
+
 def validate_township(township):
     if len(township) <1:
         raise ValidationError('El municipio no puede estar vacío')

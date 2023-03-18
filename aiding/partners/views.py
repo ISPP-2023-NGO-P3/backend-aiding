@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString 
 import json
 from django.forms import ValidationError
-from .validators import validate_date, validate_dni, validate_iban
+from .validators import validate_date, validate_dni, validate_iban, validate_name, validate_last_name, validate_dni_blank,validate_phone1,validate_birthdate,validate_address,validate_account_holder,validate_iban_blank,validate_language,validate_postal_code,validate_province,validate_township
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -297,8 +297,8 @@ class ImportCSVView(views.APIView):
                     csvFile.close()
                     obj.delete()
                     remove(path)
-                    for id in ids_list:
-                        partner=Partners.objects.get(id=id)
+                    for partner_id in ids_list:
+                        partner=Partners.objects.get(id=partner_id)
                         partner.delete()
                     error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
                     return Response(data=error, status=ST_409)
@@ -307,7 +307,7 @@ class ImportCSVView(views.APIView):
                     dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
                     email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
                     province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
-                    state=jd['state']) 
+                    state=jd['state'])
                     ids_list.append(new_partner.id)
 
                 except IntegrityError:
