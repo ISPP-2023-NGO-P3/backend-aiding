@@ -1,6 +1,7 @@
 import json
 from django.utils.decorators import method_decorator
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import views
@@ -71,10 +72,12 @@ class UserView(views.APIView):
                 return Response(data=data, status=ST_404)
 
     def post(self, request):
-        jd = json.loads(request.body)
+        jd = json.dumps(request.data)
+        jd = json.loads(jd)
         auth_user = request.user
-        if auth_user.is_authenticated() and auth_user.is_admin:            
-            User.objects.create(username=jd['username'],password=jd['password'])
+        print(auth_user)
+        if auth_user.is_authenticated and auth_user.is_admin:            
+            User.objects.create(username=jd['username'],password=make_password(jd['password']))
             data = {'message': "Success"}
             return Response(data=data, status=ST_201)
         else:
@@ -82,16 +85,17 @@ class UserView(views.APIView):
             return Response(data=data, status=ST_403)
 
     def put(self, request, user_id):
-        jd = json.loads(request.body)
+        jd = json.dumps(request.data)
+        jd = json.loads(jd)
         users = list(User.objects.filter(id=user_id).values())
 
         auth_user = request.user
 
-        if auth_user.is_authenticated() and auth_user.is_admin:
+        if auth_user.is_authenticated and auth_user.is_admin:
             if len(users) > 0:
                 user = User.objects.get(id=user_id)
                 user.username = jd['username']
-                user.password = jd['password']
+                user.password = make_password(jd['password'])
                 user.save()
                 data = {'message': "Success"}
                 return Response(data=data, status=ST_200)
