@@ -24,7 +24,7 @@ class LoginView(views.APIView):
     @method_decorator(csrf_exempt)
     def post(self, request):
         if request.user.is_authenticated:
-            data = {'message' : 'You are already logged in!'}
+            data = {'message' : 'You are already logged in'}
             return Response(data, status=ST_401)
         jd = json.loads(request.body)
         user = authenticate(username = jd['username'], password = jd['password'])
