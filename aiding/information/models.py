@@ -39,14 +39,11 @@ class Multimedia(models.Model):
     )
     description = models.TextField(blank=True, null=True, max_length=255)
 
-# class ResourceType(models.Model):
-#     name = models.CharField(unique=True, blank=False, null=False, max_length=100)
-
 class Resource(models.Model):
     RESOURCE_TYPE = (
-        ('neighborhood_association','Asociación de vecinos'),
-        ('seniors_association','Asociación de mayores'),
-        ('nursing_home','Residencia'),
+        ('Asociación de vecinos','neighborhood_association'),
+        ('Asociación de mayores','seniors_association'),
+        ('Residencia','nursing_home'),
     )
     title = models.CharField(blank=False, null=False, max_length=100)
     description = models.CharField(blank=False, max_length=255)
@@ -55,10 +52,6 @@ class Resource(models.Model):
     number = models.CharField(null=True, blank=True, max_length=10)
     city = models.CharField(blank=False, max_length=100)
     resource_type = models.CharField(max_length=25, choices=RESOURCE_TYPE)
-
-    # resource_type = models.ForeignKey(
-    #     ResourceType, related_name="resource_type", on_delete=models.CASCADE
-    # )
 
     additional_comments = models.CharField(blank=True, max_length=255)
 
