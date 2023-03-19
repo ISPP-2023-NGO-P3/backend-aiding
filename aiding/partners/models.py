@@ -6,7 +6,7 @@ from .validators import validate_date, validate_dni, validate_iban
 class Partners(models.Model):
     STATE_CHOICES = (
         ('Activo','Activo'),
-        ('Activo','Inactivo'),
+        ('Inactivo','Inactivo'),
     )
 
     SEX_CHOICES = (
