@@ -20,38 +20,34 @@ class ContactView(views.APIView):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, contact_id=0):
-        if contact_id> 0:
+        if (contact_id > 0):
             contacts = list(Contact.objects.filter(id=contact_id).values())
             if len(contacts) > 0:
                 contacts = contacts[0]
                 return Response(data=contacts, status=ST_200)
             else:
                 datos = {'message': "partner not found..."}
-                return Response(data=datos, status=ST_404)
+            return Response(data=datos, status=ST_404)
         else:
             contacts = list(Contact.objects.all().values())
-            if len(contacts)>0:
+            if len(contacts) > 0:
                 datos = {'contacts': contacts}
-                return Response(data=datos, status=ST_200)
+                return Response(data=contacts, status=ST_200)
             else:
                 datos = {'message': "contacts not found..."}
-                return Response(data=datos, status=ST_404)
+            return Response(data=datos, status=ST_404)
             
-    def post(request, self):
+    def post(self,request):
         jd = json.loads(request.body)
-        try:
-            Contact.objects.create(
-                name=jd['name'],
-                email=jd['email'],
-                subject=jd['subject'],
-                message=jd['message'],
-            )
-            datos = {'message': "contact created..."}
-            return Response(data=datos, status=ST_201)
-        except:
-            datos = {'message': "contact not created..."}
-            return Response(data=datos, status=ST_409)
-        
+        Contact.objects.create(
+            name=jd['name'],
+            email=jd['email'],
+            subject=jd['subject'],
+            message=jd['message'],
+        )
+        datos = {'message': "contact created..."}
+        return Response(data=datos, status=ST_201)
+       
     def delete(self, request, contact_id):
         contacts = list(Contact.objects.filter(id=contact_id).values())
         if len(contacts) > 0:
