@@ -348,3 +348,22 @@ class MultimediaTests(APITestCase):
         self.assertEqual(response.status_code, 404)
         dataMessage = {'message': 'Multimedia not found...'}
         self.assertEqual(response.data, dataMessage)
+
+
+class AdvertisementSectionTest(APITestCase):
+
+    def test_show_advertisement_section_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        response = self.client.get(
+            f'/information/sections/{section.id}/advertisements/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]['title'], "Anuncio 1")
+
+    def test_show_advertisement_section_status_NOT_FOUND(self):
+        response = self.client.get(
+            f'/information/sections/1/advertisements/')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {"message": "Section not found"}
+        self.assertEqual(response.data, dataMessage)
