@@ -1,7 +1,7 @@
 from django.contrib import admin
 from rest_framework.response import Response
 
-from .models import Advertisement, Multimedia, Resource, Section, ResourceType
+from .models import Advertisement, Multimedia, Resource, Section
 
 
 class SectionAdmin(admin.ModelAdmin):
@@ -82,4 +82,4 @@ admin.site.register(Advertisement, AdvertisementAdmin)
 admin.site.register(Section, SectionAdmin)
 admin.site.register(Multimedia, MultimediaAdmin)
 admin.site.register(Resource, ResourceAdmin)
-admin.site.register(ResourceType, ResourceTypeAdmin)
+# admin.site.register(ResourceType, ResourceTypeAdmin)

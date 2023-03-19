@@ -39,19 +39,26 @@ class Multimedia(models.Model):
     )
     description = models.TextField(blank=True, null=True, max_length=255)
 
-class ResourceType(models.Model):
-    name = models.CharField(unique=True, blank=False, null=False, max_length=100)
+# class ResourceType(models.Model):
+#     name = models.CharField(unique=True, blank=False, null=False, max_length=100)
 
 class Resource(models.Model):
+    RESOURCE_TYPE = (
+        ('neighborhood_association','Asociación de vecinos'),
+        ('seniors_association','Asociación de mayores'),
+        ('nursing_home','Residencia'),
+    )
     title = models.CharField(blank=False, null=False, max_length=100)
     description = models.CharField(blank=False, max_length=255)
-    contact_phone = models.CharField(max_length=15, unique=True, blank=False)
+    contact_phone = models.CharField(null=True, blank=True, max_length=15)
     street = models.CharField(blank=False, max_length=255)
     number = models.CharField(null=True, blank=True, max_length=10)
     city = models.CharField(blank=False, max_length=100)
-    resource_type = models.ForeignKey(
-        ResourceType, related_name="resource_type", on_delete=models.CASCADE
-    )
+    resource_type = models.CharField(max_length=25, choices=RESOURCE_TYPE)
+
+    # resource_type = models.ForeignKey(
+    #     ResourceType, related_name="resource_type", on_delete=models.CASCADE
+    # )
 
     additional_comments = models.CharField(blank=True, max_length=255)
 
@@ -67,6 +74,12 @@ class Resource(models.Model):
         max_length=255,
         validators=[MaxValueValidator(180), MinValueValidator(-180)],
     )
+
+    position = models.CharField(max_length=50, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.position = f'[{self.latitude}, {self.longitude}]'
+        super(Resource, self).save(*args, **kwargs)
 
     def get_coordinates(self, street, number, city):
         address = street

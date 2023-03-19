@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (AdvertisementSectionView, AdvertisementView,
-                    MultimediaView, ResourceView, SectionView, ResourceTypeView, ResourceResourceTypeView)
+                    MultimediaView, ResourceView, SectionView)
 
 urlpatterns = [
     path('sections/', SectionView.as_view()),
@@ -14,17 +14,17 @@ urlpatterns = [
     path('multimedias/<int:multimedia_id>', MultimediaView.as_view()),
 
     path('resources/', ResourceView.as_view()),
-    path('resources/<int:resource_type_id>', ResourceView.as_view()),
+#     path('resources/<int:resource_type_id>', ResourceView.as_view()),
 
-    path('resource_types/', ResourceTypeView.as_view()),
-    path('resource_types/<int:resource_type_id>', ResourceTypeView.as_view()),
+#     path('resource_types/', ResourceTypeView.as_view()),
+#     path('resource_types/<int:resource_type_id>', ResourceTypeView.as_view()),
 
     # CUSTOM ENDPOINTS
 
     path('sections/<int:section_id>/advertisements/',
          AdvertisementSectionView.as_view()),
 
-    path('resource_types/<int:resource_type_id>/resources/',
-         ResourceResourceTypeView.as_view())
+#     path('resource_types/<int:resource_type_id>/resources/',
+#          ResourceResourceTypeView.as_view())
 
 ]

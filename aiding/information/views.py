@@ -11,7 +11,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
-from .models import Advertisement, Multimedia, ResourceType, Resource, Section
+from .models import Advertisement, Multimedia, Resource, Section
 
 
 class CsrfExemptMixin:
@@ -294,33 +294,27 @@ class ResourceView(CsrfExemptMixin, views.APIView):
     def post(self, request):
         jd = json.loads(request.body)
         try:
-            typ = ResourceType.object.filter(id=jd["resource_type_id"])
-            if len(typ) > 0:
-                typ = typ[0]
-                street = jd["street"]
-                number = jd["number"]
-                city = jd["city"]
+            street = jd["street"]
+            number = jd["number"]
+            city = jd["city"]
 
-                coord = Resource.get_coordinates(self, street, number, city)
-                if isinstance(coord, Response):
-                    return coord
-                Resource.objects.create(
-                    title=jd["title"],
-                    description=jd["description"],
-                    contact_phone=jd["contact_phone"],
-                    street=street,
-                    number=number,
-                    city=city,
-                    resource_type=typ,
-                    additional_comments=jd["additional_comments"],
-                    latitude=coord[0],
-                    longitude=coord[1],
-                )
-                data = {"message": "Success"}
-                return Response(data=data, status=ST_201)
-            else:
-                datos = {"message": "Type not found"}
-                return Response(data=datos, status=ST_404)
+            coord = Resource.get_coordinates(self, street, number, city)
+            if isinstance(coord, Response):
+                return coord
+            Resource.objects.create(
+                title=jd["title"],
+                description=jd["description"],
+                contact_phone=jd["contact_phone"],
+                street=street,
+                number=number,
+                city=city,
+                resource_type=jd['resource_type'],
+                additional_comments=jd["additional_comments"],
+                latitude=coord[0],
+                longitude=coord[1],
+            )
+            data = {"message": "Success"}
+            return Response(data=data, status=ST_201)
         except IntegrityError:
             error = {
                 "error": "This resource was added into the page, please create another different"
@@ -378,77 +372,77 @@ class ResourceView(CsrfExemptMixin, views.APIView):
             return Response(data=data, status=ST_404)
 
 
-class ResourceTypeView(CsrfExemptMixin, views.APIView):
-    def get(self, request, resource_type_id=0):
-        if resource_type_id > 0:
-            resource_type = list(ResourceType.objects.filter(
-                id=resource_type_id).values())
-            if len(resource_type) > 0:
-                resource_type = resource_type[0]
-                return Response(data=resource_type, status=ST_200)
-            else:
-                datos = {"message": "Type not found..."}
-                return Response(data=datos, status=ST_404)
-        else:
-            resource_types = list(
-                ResourceType.objects.filter(active=True).values())
-            lenght = len(resource_types)
-            if lenght > 0:
-                resource_types = resource_types[lenght - 2: lenght]
-                return Response(data=resource_types, status=ST_200)
-            else:
-                datos = {"message": "Types not found..."}
-            return Response(data=datos, status=ST_404)
+# class ResourceTypeView(CsrfExemptMixin, views.APIView):
+#     def get(self, request, resource_type_id=0):
+#         if resource_type_id > 0:
+#             resource_type = list(ResourceType.objects.filter(
+#                 id=resource_type_id).values())
+#             if len(resource_type) > 0:
+#                 resource_type = resource_type[0]
+#                 return Response(data=resource_type, status=ST_200)
+#             else:
+#                 datos = {"message": "Type not found..."}
+#                 return Response(data=datos, status=ST_404)
+#         else:
+#             resource_types = list(
+#                 ResourceType.objects.filter(active=True).values())
+#             lenght = len(resource_types)
+#             if lenght > 0:
+#                 resource_types = resource_types[lenght - 2: lenght]
+#                 return Response(data=resource_types, status=ST_200)
+#             else:
+#                 datos = {"message": "Types not found..."}
+#             return Response(data=datos, status=ST_404)
 
-    def post(self, request):
-        jd = json.loads(request.body)
-        try:
-            ResourceType.objects.create(name=jd["name"])
-            datos = {"message": "Success"}
-            return Response(data=datos, status=ST_201)
-        except IntegrityError:
-            error = {
-                "error": "This type was added into the page, please create another different"
-            }
-            return Response(data=error, status=ST_409)
+#     def post(self, request):
+#         jd = json.loads(request.body)
+#         try:
+#             ResourceType.objects.create(name=jd["name"])
+#             datos = {"message": "Success"}
+#             return Response(data=datos, status=ST_201)
+#         except IntegrityError:
+#             error = {
+#                 "error": "This type was added into the page, please create another different"
+#             }
+#             return Response(data=error, status=ST_409)
 
-    def put(self, request, resource_type_id):
-        jd = json.loads(request.body)
-        resource_types = list(ResourceType.objects.filter(
-            id=resource_type_id).values())
-        if len(resource_types) > 0:
-            resource_type = ResourceType.objects.get(id=resource_type_id)
-            try:
-                resource_type.name = jd["name"]
-                resource_type.save()
-                datos = {"message": "Success"}
-                return Response(data=datos, status=ST_200)
-            except IntegrityError:
-                error = {
-                    "error": "This type was added into the page, please select another different"
-                }
-                return Response(data=error, status=ST_409)
-        else:
-            datos = {"message": "Type not found..."}
-        return Response(data=datos, status=ST_404)
+#     def put(self, request, resource_type_id):
+#         jd = json.loads(request.body)
+#         resource_types = list(ResourceType.objects.filter(
+#             id=resource_type_id).values())
+#         if len(resource_types) > 0:
+#             resource_type = ResourceType.objects.get(id=resource_type_id)
+#             try:
+#                 resource_type.name = jd["name"]
+#                 resource_type.save()
+#                 datos = {"message": "Success"}
+#                 return Response(data=datos, status=ST_200)
+#             except IntegrityError:
+#                 error = {
+#                     "error": "This type was added into the page, please select another different"
+#                 }
+#                 return Response(data=error, status=ST_409)
+#         else:
+#             datos = {"message": "Type not found..."}
+#         return Response(data=datos, status=ST_404)
 
 
-class ResourceResourceTypeView(CsrfExemptMixin, views.APIView):
-    def get(self, request, resource_type_id=0):
-        if resource_type_id > 0:
-            try:
-                resource_type = ResourceType.objects.filter(
-                    id=resource_type_id)
-                resource_type_id = resource_type.get().__getattribute__("id")
+# class ResourceResourceTypeView(CsrfExemptMixin, views.APIView):
+#     def get(self, request, resource_type_id=0):
+#         if resource_type_id > 0:
+#             try:
+#                 resource_type = ResourceType.objects.filter(
+#                     id=resource_type_id)
+#                 resource_type_id = resource_type.get().__getattribute__("id")
 
-                resources_with_resource_type_id = list(
-                    Resource.objects.filter(
-                        resource_type_id=resource_type_id).values()
-                )
-                return Response(data=resources_with_resource_type_id, status=ST_200)
-            except Exception:
-                datos = {"message": "Resource not found"}
-                return Response(data=datos, status=ST_404)
-        else:
-            datos = {"message": "Type not found"}
-            return Response(data=datos, status=ST_404)
+#                 resources_with_resource_type_id = list(
+#                     Resource.objects.filter(
+#                         resource_type_id=resource_type_id).values()
+#                 )
+#                 return Response(data=resources_with_resource_type_id, status=ST_200)
+#             except Exception:
+#                 datos = {"message": "Resource not found"}
+#                 return Response(data=datos, status=ST_404)
+#         else:
+#             datos = {"message": "Type not found"}
+#             return Response(data=datos, status=ST_404)
