@@ -14,7 +14,7 @@ urlpatterns = [
     path('multimedias/<int:multimedia_id>', MultimediaView.as_view()),
 
     path('resources/', ResourceView.as_view()),
-#     path('resources/<int:resource_type_id>', ResourceView.as_view()),
+    path('resources/<int:resource_id>', ResourceView.as_view()),
 
 #     path('resource_types/', ResourceTypeView.as_view()),
 #     path('resource_types/<int:resource_type_id>', ResourceTypeView.as_view()),
