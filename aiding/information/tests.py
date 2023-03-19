@@ -175,7 +175,7 @@ class AdvertisementTests(APITestCase):
         section = Section.objects.create(name="Seccion 1", active=True)
         advertisement = Advertisement.objects.create(
             title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
-        
+
         data = {"title": "Anuncio 2", "abstract": "Resumen 2", "body": "Descripcion 2",
                 "url": "https://www.google.com", "section_id": section.id}
         response = self.client.put(
@@ -188,7 +188,7 @@ class AdvertisementTests(APITestCase):
         section = Section.objects.create(name="Seccion 1", active=True)
         Advertisement.objects.create(
             title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
-        
+
         advertisement = Advertisement.objects.create(
             title="Anuncio 2", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
         data = {"title": "Anuncio 1", "abstract": "Resumen 2", "body": "Descripcion 2",
@@ -196,9 +196,10 @@ class AdvertisementTests(APITestCase):
         response = self.client.put(
             f'/information/advertisements/{advertisement.id}', data=data)
         self.assertEqual(response.status_code, 409)
-        dataMessage = {"error": "This title's advertisement was added into the page, please select another different"}
+        dataMessage = {
+            "error": "This title's advertisement was added into the page, please select another different"}
         self.assertEqual(response.data, dataMessage)
-    
+
     def test_update_negative_advertisement_NOT_FOUND(self):
         section = Section.objects.create(name="Seccion 1", active=True)
         data = {"title": "Anuncio 2", "abstract": "Resumen 2", "body": "Descripcion 2",
@@ -225,4 +226,125 @@ class AdvertisementTests(APITestCase):
         response = self.client.delete('/information/advertisements/1')
         self.assertEqual(response.status_code, 404)
         dataMessage = {'message': 'Advertisement not found'}
+        self.assertEqual(response.data, dataMessage)
+
+
+class MultimediaTests(APITestCase):
+
+    ################################################## GETS ##################################################
+
+    def test_list_multimedia_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        Multimedia.objects.create(
+            advertisement=advertisement)
+        response = self.client.get('/information/multimedias/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_list_multimedia_status_NOT_FOUND(self):
+        response = self.client.get('/information/multimedias/')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {"message": "multimedias not found..."}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_show_multimedia_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        multimedia = Multimedia.objects.create(
+            advertisement=advertisement)
+        response = self.client.get(
+            f'/information/multimedias/{multimedia.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['id'], multimedia.id)
+
+    def test_show_multimedia_status_NOT_FOUND(self):
+        response = self.client.get('/information/multimedias/1')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {"message": "multimedia not found..."}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## POSTS ##################################################
+
+    def test_create_positive_multimedia_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        data = JSONRenderer().render(
+            {"advertisement_id": advertisement.id, "multimedia": "", "description": ""}).decode('utf-8')
+        response = self.client.post(
+            '/information/multimedias/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_create_negative_multimedia_advertisement_NOT_FOUND(self):
+        data = JSONRenderer().render(
+            {"advertisement_id": 1, "multimedia": "", "description": ""}).decode('utf-8')
+        response = self.client.post(
+            '/information/multimedias/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Advertisements not found'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## PUTS ##################################################
+
+    def test_update_positive_multimedia_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        multimedia = Multimedia.objects.create(
+            advertisement=advertisement)
+        data = JSONRenderer().render(
+            {"advertisement_id": advertisement.id, "multimedia": "", "description": "como funcione me corto las venas"}).decode('utf-8')
+        response = self.client.put(
+            f'/information/multimedias/{multimedia.id}', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_multimedia_advertisement_NOT_FOUND(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        multimedia = Multimedia.objects.create(
+            advertisement=advertisement)
+        data = JSONRenderer().render(
+            {"advertisement_id": 1, "multimedia": "", "description": "como funcione me corto las venas"}).decode('utf-8')
+        response = self.client.put(
+            f'/information/multimedias/{multimedia.id}', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Advertisement not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_multimedia_status_NOT_FOUND(self):
+        data = JSONRenderer().render(
+            {"advertisement_id": 1, "multimedia": "", "description": "como funcione me corto las venas"}).decode('utf-8')
+        response = self.client.put(
+            f'/information/multimedias/1', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Multimedia not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## DELETES ##################################################
+
+    def test_delete_positive_multimedia_status_OK(self):
+        section = Section.objects.create(name="Seccion 1", active=True)
+        advertisement = Advertisement.objects.create(
+            title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section)
+        multimedia = Multimedia.objects.create(
+            advertisement=advertisement)
+        response = self.client.delete(
+            f'/information/multimedias/{multimedia.id}')
+        self.assertEqual(response.status_code, 204)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_delete_negative_multimedia_status_NOT_FOUND(self):
+        response = self.client.delete(
+            f'/information/multimedias/1')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Multimedia not found...'}
         self.assertEqual(response.data, dataMessage)
