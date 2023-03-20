@@ -17,8 +17,10 @@ class Section(models.Model):
 
 class Advertisement(models.Model):
     title = models.CharField(unique=True, blank=False, null=False, max_length=200)
-    description = models.TextField(blank=False, null=False, max_length=5000)
+    abstract = models.TextField(blank=True, null=False, max_length=250)
+    body = models.TextField(blank=False, null=False, max_length=5000)
     url = models.URLField(null=True, blank=True)
+    creation_date = models.DateField(auto_now_add=True)
     section = models.ForeignKey(
         Section, related_name="section", on_delete=models.CASCADE
     )
