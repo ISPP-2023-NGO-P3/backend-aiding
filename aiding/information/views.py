@@ -375,7 +375,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
                 resource.description = jd["description"]
                 resource.contact_phone = jd["contact_phone"]
                 resource.additional_comments = jd["additional_comments"]
-
+                resource.resource_type=jd['resource_type']
                 street = jd["street"]
                 number = jd["number"]
                 city = jd["city"]
