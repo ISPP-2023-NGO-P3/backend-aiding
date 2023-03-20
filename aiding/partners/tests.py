@@ -33,7 +33,7 @@ class PartnerTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["name"], "Persona1")
 
-    def test_show_negative_section_status_NOT_FOUND(self):
+    def test_show_negative_partners_status_NOT_FOUND(self):
         response = self.client.get('/partners/1')
         data = {"message": "partner not found..."}
         self.assertEqual(response.status_code, 404)
