@@ -91,7 +91,7 @@ class VolunteerManagement(views.APIView):
                 return Response(data=error, status=ST_409)
         else:
             datos = {'error': "Volunteer not found..."}
-        return Response(data=error, status=ST_409)
+        return Response(data=datos, status=ST_409)
     
     def delete(self, request, volunteer_id):
         sections = list(Volunteer.objects.filter(id=volunteer_id).values())
