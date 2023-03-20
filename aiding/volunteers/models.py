@@ -20,7 +20,7 @@ class Volunteer(models.Model):
 
     name = models.CharField(max_length=100, blank=False)
     last_name = models.CharField(max_length=100, blank=False)
-    num_volunteer=models.IntegerField(blank=False)
+    num_volunteer=models.IntegerField(blank=False,unique=True)
     nif=models.CharField(max_length=9, unique=True, blank=False)
     place=models.CharField(max_length=150, blank=False)
     phone=models.CharField(max_length=15, unique=True, blank=False)

@@ -2,7 +2,6 @@ from rest_framework import views
 import json
 from django.db import IntegrityError
 from django.forms import ValidationError
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
@@ -27,7 +26,7 @@ class VolunteerManagement(views.APIView):
                 volunteers = volunteers[0]
                 return Response(data=volunteers, status=ST_200)
             else:
-                datos = {'message': "volunteer not found..."}
+                datos = {'message': "Volunteer not found..."}
             return Response(data=datos, status=ST_404)
         else:
             volunteers = list(Volunteer.objects.values())
@@ -35,7 +34,7 @@ class VolunteerManagement(views.APIView):
                 datos = {'volunteers': volunteers}
                 return Response(data=volunteers, status=ST_200)
             else:
-                datos = {'message': "volunteers not found..."}
+                datos = {'message': "Volunteers not found..."}
             return Response(data=datos, status=ST_404)
   
     def post(self, request):
@@ -91,7 +90,7 @@ class VolunteerManagement(views.APIView):
                 error = {'error': "There is already a volunteer with a field equal to the one you are trying to add, please check the data."}
                 return Response(data=error, status=ST_409)
         else:
-            datos = {'message': "Volunteer not found..."}
+            datos = {'error': "Volunteer not found..."}
         return Response(data=error, status=ST_409)
     
     def delete(self, request, volunteer_id):
@@ -101,7 +100,7 @@ class VolunteerManagement(views.APIView):
             datos = {"message": "Successfully deleted"}
             return Response(data=datos, status=ST_204)
         else:
-            datos = {"message": "Volunteer not found..."}
+            datos = {"error": "Volunteer not found..."}
             return Response(data=datos, status=ST_404)
     
 
