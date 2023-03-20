@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString 
 import json
 from django.forms import ValidationError
-from .validators import validate_date, validate_dni, validate_iban, validate_name, validate_last_name, validate_dni_blank,validate_phone1,validate_birthdate,validate_address,validate_account_holder,validate_iban_blank,validate_language,validate_postal_code,validate_province,validate_township
+from .validators import validate_date, validate_dni, validate_iban, validate_name, validate_last_name, validate_dni_blank,validate_phone1,validate_birthdate,validate_address,validate_account_holder,validate_iban_blank,validate_language,validate_postal_code,validate_province,validate_township,validate_sex,validate_state
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -280,19 +280,21 @@ class ImportCSVView(views.APIView):
                 try:
                     validate_dni(jd['dni'])
                     validate_iban(jd['iban'])
-                    validate_date(jd['birthdate'])
-                    validate_name(jd['ï»¿name'])
-                    validate_last_name(jd['last_name'])
+                    validate_date(jd['cumpleanos'])
+                    validate_name(jd['ï»¿nombre'])
+                    validate_last_name(jd['apellidos'])
                     validate_dni_blank(jd['dni'])
-                    validate_phone1(jd['phone1'])
-                    validate_birthdate(jd['birthdate'])
-                    validate_address(jd['address'])
-                    validate_postal_code(jd['postal_code'])
-                    validate_township(jd['township'])
-                    validate_province(jd['province'])
-                    validate_language(jd['language'])
+                    validate_phone1(jd['telefono'])
+                    validate_birthdate(jd['cumpleanos'])
+                    validate_address(jd['direccion'])
+                    validate_postal_code(jd['codigo_postal'])
+                    validate_township(jd['municipio'])
+                    validate_province(jd['provincia'])
+                    validate_language(jd['idioma'])
                     validate_iban_blank(jd['iban'])
-                    validate_account_holder(jd['account_holder'])
+                    validate_account_holder(jd['titular_cuenta'])
+                    validate_state(jd['estado'])
+                    validate_sex(jd['sexo'])
                 except ValidationError as e:
                     csvFile.close()
                     obj.delete()
@@ -303,11 +305,11 @@ class ImportCSVView(views.APIView):
                     error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
                     return Response(data=error, status=ST_409)
                 try:
-                    new_partner=Partners.objects.create(name=jd['ï»¿name'], last_name=jd['last_name'],
-                    dni=jd['dni'], phone1=jd['phone1'], phone2=jd['phone2'], birthdate=jd['birthdate'], sex=jd['sex'],
-                    email=jd['email'], address=jd['address'], postal_code=jd['postal_code'], township=jd['township'],
-                    province=jd['province'], language=jd['language'], iban=jd['iban'],  account_holder=jd['account_holder'],
-                    state=jd['state'])
+                    new_partner=Partners.objects.create(name=jd['ï»¿nombre'], last_name=jd['apellidos'],
+                    dni=jd['dni'], phone1=jd['telefono'], phone2=jd['telefono_adicional'], birthdate=jd['cumpleanos'], sex=jd['sexo'],
+                    email=jd['email'], address=jd['direccion'], postal_code=jd['codigo_postal'], township=jd['municipio'],
+                    province=jd['provincia'], language=jd['idioma'], iban=jd['iban'],  account_holder=jd['titular_cuenta'],
+                    state=jd['estado'])
                     ids_list.append(new_partner.id)
 
                 except IntegrityError:

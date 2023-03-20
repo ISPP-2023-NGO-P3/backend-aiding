@@ -62,9 +62,6 @@ def validate_province(province):
     if len(province) <1:
         raise ValidationError('La provincia no puede estar vacía')
 
-def validate_language(language):
-    if len(language) <1:
-        raise ValidationError('El idioma no puede estar vacío')
  
 def validate_iban_blank(iban):
     if len(iban) <1:
@@ -73,3 +70,15 @@ def validate_iban_blank(iban):
 def validate_account_holder(account_holder):
     if len(account_holder) <1:
         raise ValidationError('El titular de la cuenta no puede estar vacío')
+
+def validate_sex(sex):
+    if len(sex)<1 or not (sex=="men" or sex=="women" or sex=="none"):
+        raise ValidationError('El sexo debe ser "men", "women" o "none"')
+
+def validate_language(language):
+    if len(language)<1 or not (language == "spanish" or language=="catalan"):
+        raise ValidationError('El idioma debe ser "spanish" o "catalan"')
+
+def validate_state(state):
+    if len(state)<1 or not (state=="Activo" or state=="Inactivo"):
+        raise ValidationError('El estado debe ser "Activo" o "Inactivo"')
