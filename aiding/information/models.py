@@ -53,7 +53,7 @@ class Resource(models.Model):
     street = models.CharField(blank=False, max_length=255)
     number = models.CharField(null=True, blank=True, max_length=10)
     city = models.CharField(blank=False, max_length=100)
-    resource_type = models.CharField(max_length=25, choices=RESOURCE_TYPE)
+    resource_type = models.CharField(max_length=25, choices=RESOURCE_TYPE, default='neighborhood_association')
 
     additional_comments = models.CharField(blank=True, max_length=255)
 
@@ -91,9 +91,8 @@ class Resource(models.Model):
 
         address += ", " + city
         geolocator = Nominatim(user_agent="aiding")
-        location = geolocator.geocode(address)
         try:
-            location = geolocator.geocode(address, timeout=10)
+            location = geolocator.geocode(address, timeout=20)
         except GeocoderTimedOut as error_timeout:
             error = "GeocodeTimedOut: " + str(error_timeout)
             return Response(data=error, status=ST_408)
