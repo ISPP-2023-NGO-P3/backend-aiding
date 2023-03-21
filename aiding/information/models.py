@@ -17,8 +17,10 @@ class Section(models.Model):
 
 class Advertisement(models.Model):
     title = models.CharField(unique=True, blank=False, null=False, max_length=200)
-    description = models.TextField(blank=False, null=False, max_length=5000)
+    abstract = models.TextField(blank=True, null=False, max_length=250)
+    body = models.TextField(blank=False, null=False, max_length=5000)
     url = models.URLField(null=True, blank=True)
+    creation_date = models.DateField(auto_now_add=True)
     section = models.ForeignKey(
         Section, related_name="section", on_delete=models.CASCADE
     )
@@ -39,14 +41,20 @@ class Multimedia(models.Model):
     )
     description = models.TextField(blank=True, null=True, max_length=255)
 
-
 class Resource(models.Model):
+    RESOURCE_TYPE = (
+        ('Asociación de vecinos','neighborhood_association'),
+        ('Asociación de mayores','seniors_association'),
+        ('Residencia','nursing_home'),
+    )
     title = models.CharField(blank=False, null=False, max_length=100)
     description = models.CharField(blank=False, max_length=255)
-
+    contact_phone = models.CharField(null=True, blank=True, max_length=15)
     street = models.CharField(blank=False, max_length=255)
     number = models.CharField(null=True, blank=True, max_length=10)
     city = models.CharField(blank=False, max_length=100)
+    resource_type = models.CharField(max_length=25, choices=RESOURCE_TYPE)
+
     additional_comments = models.CharField(blank=True, max_length=255)
 
     latitude = models.FloatField(
@@ -61,6 +69,12 @@ class Resource(models.Model):
         max_length=255,
         validators=[MaxValueValidator(180), MinValueValidator(-180)],
     )
+
+    position = models.CharField(max_length=50, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.position = f'[{self.latitude}, {self.longitude}]'
+        super(Resource, self).save(*args, **kwargs)
 
     def get_coordinates(self, street, number, city):
         address = street

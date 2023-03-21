@@ -35,6 +35,7 @@ MODULES = [
     'base',
     'information',
     'partners',
+    'volunteers',
 ]
 
 INSTALLED_APPS = [
@@ -49,7 +50,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -129,6 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'base.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
