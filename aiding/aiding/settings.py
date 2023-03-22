@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,13 +26,16 @@ SECRET_KEY = 'django-insecure-8kqm=f_s3lyko(#g=agd03t+fr1o2ii$1a%!fawlo-o!%*b_3v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 MODULES = [
     'base',
+    'information',
+    'partners',
+    'volunteers',
 ]
 
 INSTALLED_APPS = [
@@ -42,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -52,14 +57,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 # Allow cors origin
 CORS_ORIGIN_WHITELIST = (
-    'http://localhost',
-    'http://localhost:3000',
+    'http://127.0.0.1',
+    'http://127.0.0.1:3000',
 )
 
+CORS_ORIGIN_ALLOW_ALL=True
 
 ROOT_URLCONF = 'aiding.urls'
 
@@ -122,6 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'base.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -145,6 +153,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT= os.path.join(BASE_DIR, "media")
+MEDIA_URL="/media/"
 
 # Importing local settings
 try:
