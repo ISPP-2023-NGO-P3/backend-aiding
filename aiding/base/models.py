@@ -4,6 +4,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 class Contact(models.Model):
     name = models.CharField(max_length=50, null=False)
     email = models.EmailField(blank=False, null=False)
+    phone = models.CharField(max_length=20, null=False)
     datetime = models.DateTimeField(auto_now_add=True)
     subject = models.CharField(max_length=100, null=False)
     message = models.TextField(max_length=1000, null=False)
