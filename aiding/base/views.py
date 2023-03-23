@@ -41,7 +41,7 @@ class LogoutView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request):
+    def get(self, request):
         if request.user.is_authenticated:
             logout(request)
             data = {'message' : 'Logout successful!'}

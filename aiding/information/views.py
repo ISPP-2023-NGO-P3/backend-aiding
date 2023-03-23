@@ -13,6 +13,8 @@ from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
 from .models import Advertisement, Multimedia, Resource, Section
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 class CsrfExemptMixin:
     @method_decorator(csrf_exempt)
@@ -38,7 +40,8 @@ class SectionView(CsrfExemptMixin, views.APIView):
             else:
                 datos = {"message": "sections not found..."}
             return Response(data=datos, status=ST_404)
-
+        
+    @method_decorator(login_required)
     def post(self, request):
         jd = json.loads(request.body)
         name = jd["name"]
@@ -58,6 +61,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(login_required)
     def put(self, request, section_id):
         jd = json.loads(request.body)
         sections = list(Section.objects.filter(id=section_id).values())
@@ -78,6 +82,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
             datos = {"message": "Section not found..."}
         return Response(data=datos, status=ST_404)
 
+    @method_decorator(login_required)
     def delete(self, request, section_id):
         sections = list(Section.objects.filter(id=section_id).values())
         if len(sections) > 0:
