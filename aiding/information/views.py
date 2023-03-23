@@ -14,7 +14,6 @@ from rest_framework.status import HTTP_409_CONFLICT as ST_409
 from .models import Advertisement, Multimedia, Resource, Section
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
 
 class CsrfExemptMixin:
     @method_decorator(csrf_exempt)
