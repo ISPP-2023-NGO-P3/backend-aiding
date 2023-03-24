@@ -51,25 +51,25 @@ class Event(models.Model):
                 if int(number) > 0:
                     address += ", " + number
                 else:
-                    error = "Number must be positive or null"
+                    error = {"error": "Number must be positive or null."}
                     return Response(data=error, status=ST_400)
             else:
-                error = "Number must be positive or null"
+                error = {"error": "Number must be positive or null."}
                 return Response(data=error, status=ST_400)
 
         address += ", " + city
         geolocator = Nominatim(user_agent="aiding")
-        location = geolocator.geocode(address)
         try:
-            location = geolocator.geocode(address, timeout=10)
+            location = geolocator.geocode(address, timeout=20)
         except GeocoderTimedOut as error_timeout:
-            error = "GeocodeTimedOut: " + str(error_timeout)
+            error = {"error": "GeocodeTimedOut: " + str(error_timeout)}
             return Response(data=error, status=ST_408)
 
         if location:
             latitude = location.latitude
             longitude = location.longitude
         else:
-            error = "Address not found."
-            return Response(data=error, status=ST_404)
+            error = {"error": "Address not found."}
+            return Response(data=error, status=ST_400)
+
         return latitude, longitude
