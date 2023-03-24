@@ -143,8 +143,8 @@ class PartnerManagement(views.APIView):
                 return Response(data=error, status=ST_409)
 
         else:
-            datos = {'message': "Partner not found..."}
-        return Response(data=error, status=ST_409)
+            error = {'message': "Partner not found..."}
+            return Response(data=error, status=ST_404)
     
 class DonationView(View):
 
