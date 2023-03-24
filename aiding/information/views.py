@@ -3,6 +3,10 @@ import json
 from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
+
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK as ST_200
@@ -21,7 +25,9 @@ class CsrfExemptMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+
 class SectionView(CsrfExemptMixin, views.APIView):
+
     def get(self, request, section_id=0):
         if section_id > 0:
             section = list(Section.objects.filter(id=section_id).values())
@@ -39,14 +45,14 @@ class SectionView(CsrfExemptMixin, views.APIView):
             else:
                 datos = {"message": "sections not found..."}
             return Response(data=datos, status=ST_404)
-        
-    @method_decorator(login_required)
+
+    @method_decorator(staff_member_required)
     def post(self, request):
-        jd = json.loads(request.body)
-        name = jd["name"]
+        print(self.request.user)
+        name = request.data["name"]
 
         try:
-            active = jd["active"]
+            active = request.data["active"]
         except KeyError:
             active = True
 
@@ -60,7 +66,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
-    @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     def put(self, request, section_id):
         jd = json.loads(request.body)
         sections = list(Section.objects.filter(id=section_id).values())
@@ -81,7 +87,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
             datos = {"message": "Section not found..."}
         return Response(data=datos, status=ST_404)
 
-    @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     def delete(self, request, section_id):
         sections = list(Section.objects.filter(id=section_id).values())
         if len(sections) > 0:
@@ -211,6 +217,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 datos = {"message": "Sections not found..."}
                 return Response(data=datos, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def post(self, request):
         try:
             section_id = request.POST.get("section_id")
@@ -240,6 +247,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(staff_member_required)
     def put(self, request, advertisement_id):
 
         section_id = request.POST.get("section_id")
@@ -280,6 +288,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             datos = {"message": "Advertisement not found"}
             return Response(data=datos, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def delete(self, request, advertisement_id):
         advertisements = list(
             Advertisement.objects.filter(id=advertisement_id).values()
@@ -338,6 +347,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
                 data = {"message": "Resources not found..."}
             return Response(data=data, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def post(self, request):
         jd = json.loads(request.body)
         try:
@@ -368,6 +378,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(staff_member_required)
     def put(self, request, resource_id):
         jd = json.loads(request.body)
         resources = list(Resource.objects.filter(id=resource_id).values())
@@ -408,6 +419,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
             data = {"message": "Resource not found..."}
             return Response(data=data, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def delete(self, request, resource_id):
         resources = list(Resource.objects.filter(id=resource_id).values())
         if len(resources) > 0:

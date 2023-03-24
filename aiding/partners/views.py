@@ -22,6 +22,8 @@ from datetime import datetime
 from .validators import *
 import csv
 from os import remove
+from django.contrib.admin.views.decorators import staff_member_required
+from rest_framework.permissions import IsAdminUser
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
@@ -61,6 +63,9 @@ def download_receipt_xml(request,partner_id):
         return HttpResponse(status=404)
 
 class PartnerManagement(views.APIView):
+
+    permission_classes = [IsAdminUser]
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -145,8 +150,10 @@ class PartnerManagement(views.APIView):
         else:
             datos = {'message': "Partner not found..."}
         return Response(data=error, status=ST_409)
-    
+
 class DonationView(View):
+
+    permission_classes = [IsAdminUser]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -195,8 +202,10 @@ def get_don_part(request, partner_id):
     donation = Donation.objects.filter(partner=partner)
     datos = list(donation.values())[0]
     return JsonResponse(datos, safe=False)
-    
+
 class CommunicationView(View):
+
+    permission_classes = [IsAdminUser]
     
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -263,6 +272,8 @@ class CommunicationView(View):
         return JsonResponse(data)
 
 class ImportCSVView(views.APIView):
+
+    permission_classes = [IsAdminUser]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
