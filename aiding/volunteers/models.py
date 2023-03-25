@@ -1,7 +1,4 @@
 from django.db import models
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-
 
 class Volunteer(models.Model):
     SITUATION_CHOICES = (
@@ -41,15 +38,3 @@ class Turn(models.Model):
     date = models.DateField(null=False)
     startTime = models.TimeField(null=False)
     endTime = models.TimeField(null=False)
-    volunteers = models.ManyToManyField(Volunteer)
-    
-    def clean(self):
-        super().clean()
-        if self.startTime >= self.endTime:
-            raise ValidationError('La hora de inicio debe ser anterior a la hora de fin')
-        if self.date < timezone.localdate():
-            raise ValidationError('La fecha debe ser posterior o igual a la fecha actual')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        return super().save(*args, **kwargs)

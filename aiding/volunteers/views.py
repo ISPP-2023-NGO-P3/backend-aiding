@@ -6,14 +6,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
 from .models import Volunteer, Turn
-from datetime import datetime
+import datetime
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
 from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
-from .validators import validate_nif
+from .validators import validate_nif, validate_datetime
 
 class VolunteerManagement(views.APIView):
     @method_decorator(csrf_exempt)
@@ -110,49 +110,59 @@ class TurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
-    def get(self, request):
+    def list(self, request):
         turns = Turn.objects.all()
         datos = []
-        for turn in turns:
-            volunteers = []
-            for volunteer in turn.volunteers.all():
-                volunteers.append(volunteer.name)
-            datos.append({
-                'date': turn.date,
-                'startTime': turn.startTime,
-                'endTime': turn.endTime,
-                'volunteers': volunteers
-            })
-        return Response(data=datos,status=ST_200)
+        if len(turns)>0:
+            for turn in turns:
+                datos.append({
+                    'date': turn.date,
+                    'startTime': turn.startTime,
+                    'endTime': turn.endTime,
+                })
+            return Response(data=datos,status=ST_200)
+        else:
+            message = {'message': "turns not found..."}
+            return Response(data=message, status=ST_404)
+    
+    def get(self, request, turn_id = 0):
+        if (turn_id > 0):
+            turn = list(Turn.objects.filter(id=turn_id).values())
+            if len(turn) > 0:
+                turn = turn[0]
+                return Response(data=turn, status=ST_200)
+            else:
+                datos = {'message': "turn not found..."}
+            return Response(data=datos, status=ST_404)
+        else:
+            turn = list(Volunteer.objects.values())
+            if len(turn) > 0:
+                datos = {'turn': turn}
+                return Response(data=turn, status=ST_200)
+            else:
+                datos = {'message': "turn not found..."}
+            return Response(data=datos, status=ST_404)
         
-
     def post(self,request):
          
         jd = json.loads(request.body)
-         
+        
         date_str= jd['date']
         date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
         startTime_str= jd['startTime']
         startTime = datetime.datetime.strptime(startTime_str, '%H:%M').time()
         endTime_str= jd['endTime']
         endTime = datetime.datetime.strptime(endTime_str, '%H:%M').time()
-        volunteer_ids = jd['volunteer_ids']
 
-        volunteers = []
-        for volunteer_id in volunteer_ids:
-            try:
-                volunteer = Volunteer.objects.get(id=volunteer_id, state='Activo')
-                volunteers.append(volunteer)
-            except Volunteer.DoesNotExist:
-                datos = {'message': f"Volunteer with id {volunteer_id} not found or not active"}
-                return Response(data=datos, status=ST_409)
+        try:
+            validate_datetime(date,startTime,endTime)
+            Turn.objects.create(date=date,startTime=startTime,endTime=endTime)
+            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_201)
+        except ValidationError as e:
+            error = {'error': e.message}
+            return Response(data=error, status=ST_409)
         
-        turn = Turn.objects.create(date=date, startTime=startTime, endTime=endTime)
-        turn.volunteer.set(volunteers)
-
-        datos = {'message': "Success"}
-        return Response(data=datos, status=ST_201)
-    
     def put(self, request, turn_id):
 
         try:
@@ -164,38 +174,35 @@ class TurnView(views.APIView):
         jd = json.loads(request.body)
         date_str = jd.get('date', None)
         if date_str:
-            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
             turn.date = date
         
         start_time_str = jd.get('startTime', None)
         if start_time_str:
-            startTime = datetime.strptime(start_time_str, '%H:%M').time()
+            startTime = datetime.datetime.strptime(start_time_str, '%H:%M').time()
             turn.startTime = startTime
         
         end_time_str = jd.get('endTime', None)
         if end_time_str:
-            endTime = datetime.strptime(end_time_str, '%H:%M').time()
+            endTime = datetime.datetime.strptime(end_time_str, '%H:%M').time()
             turn.endTime = endTime
         
-        volunteer_id = jd.get('volunteer', None)
-        if volunteer_id:
-            try:
-                volunteer = Volunteer.objects.get(id=volunteer_id, state='Activo')
-                turn.volunteer.set([volunteer])
-            except Volunteer.DoesNotExist:
-                datos = {'message': "Volunteer not found or not active"}
-                return Response(data=datos, status=ST_409)
-        
-        turn.save()
-        datos = {'message': "Success"}
-        return Response(data=datos, status=ST_200)
+        try:
+            validate_datetime(date,startTime,endTime)
+            turn.save()
+            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_200)
+        except ValidationError as e:
+            error = {'error': e.message}
+            return Response(data=error, status=ST_409)
+
 
     def delete(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
             turn.delete()
             datos = {'message': "Success"}
-            return Response(data=datos, status=ST_409)
+            return Response(data=datos, status=ST_204)
 
         except Turn.DoesNotExist:
             datos = {'message': "Turn not found..."}
