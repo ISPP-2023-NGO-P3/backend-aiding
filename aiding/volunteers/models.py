@@ -6,16 +6,16 @@ class Volunteer(models.Model):
         ('Ok','Ok'),
         ('necesitaFormacion','Necesita formación'),
         ('necesitaComplemento','Necesita complemento'),
-        ('nuevo','Nuevo'),
-        ('posibleSupervisor','Posible supervisor'),
-        ('posibleCapitan','Posible capitán'),
-        ('posibleVoluntarioEstructura','Posible voluntario de estructura'),
     )
 
     ROL_CHOICES = (
         ('Voluntario','Voluntario'),
         ('Supervisor','Supervisor'),
         ('Capitan','Capitán'),
+        ('nuevo','Nuevo'),
+        ('posibleSupervisor','Posible supervisor'),
+        ('posibleCapitan','Posible capitán'),
+        ('posibleVoluntarioEstructura','Posible voluntario de estructura'),
     )
 
     STATE_CHOICES = (
@@ -32,7 +32,7 @@ class Volunteer(models.Model):
     email = models.EmailField(unique=True, blank=False)
     state = models.CharField(max_length=8, choices=STATE_CHOICES, default='Activo')
     situation = models.CharField(max_length=35,choices=SITUATION_CHOICES)
-    rol = models.CharField(max_length=15,choices=ROL_CHOICES)
+    rol = models.CharField(max_length=30,choices=ROL_CHOICES)
     postal_code = models.CharField(max_length=5, blank=False)
     observations= models.CharField(max_length=250,blank=True)
     computerKnowledge=models.BooleanField(blank=False, default=False)

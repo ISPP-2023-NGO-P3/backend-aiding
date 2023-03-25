@@ -47,7 +47,7 @@ class VolunteerManagement(views.APIView):
         try:
             Volunteer.objects.create(name=jd['name'],last_name=jd['last_name'],num_volunteer=jd['num_volunteer'],
                                      nif=jd['nif'],place=jd['place'],phone=jd['phone'],email=jd['email'],
-                                     state=jd['state'],situation=jd['situation'],rol=jd['rol'],
+                                     state=jd['state'],situation=jd['situation'],rol=jd['rol'],postal_code=jd[' '],
                                      observations=jd['observations'],computerKnowledge=jd['computerKnowledge'],
                                      truckKnowledge=jd['truckKnowledge'],warehouseKnowledge=jd['warehouseKnowledge'],
                                      otherKnowledge=jd['otherKnowledge'])
@@ -78,6 +78,7 @@ class VolunteerManagement(views.APIView):
                 volunteer.state=jd['state']
                 volunteer.situation=jd['situation']
                 volunteer.rol=jd['rol']
+                volunteer.postal_code=jd['postal_code']
                 volunteer.observations=jd['observations']
                 volunteer.computerKnowledge=jd['computerKnowledge']
                 volunteer.truckKnowledge=jd['truckKnowledge']
