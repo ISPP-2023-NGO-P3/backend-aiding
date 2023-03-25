@@ -6,7 +6,6 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
-from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_408_REQUEST_TIMEOUT as ST_408
 
 

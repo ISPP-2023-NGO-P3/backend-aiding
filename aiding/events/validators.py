@@ -1,6 +1,5 @@
 import datetime
 from django.forms import ValidationError
-from dateutil.parser import parse
 import pytz
 
 from aiding.settings import TIME_ZONE

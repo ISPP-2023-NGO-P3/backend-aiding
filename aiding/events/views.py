@@ -7,7 +7,6 @@ from django.db import IntegrityError
 
 from rest_framework import views
 from rest_framework.response import Response
-from datetime import date
 from .validators import validate_event_date
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
