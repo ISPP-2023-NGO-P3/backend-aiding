@@ -129,7 +129,7 @@ class EventView(CsrfExemptMixin, views.APIView):
 class FutureEventView(CsrfExemptMixin, views.APIView):
     def get(self, request):
         events = list(Event.objects.filter(
-            start_date__gte=date.today()).values())
+            start_date__gte=timezone.now()).values())
         if len(events) > 0:
             return Response(data=events, status=ST_200)
         else:
@@ -144,6 +144,7 @@ class StartedEventView(CsrfExemptMixin, views.APIView):
                 start_date__lte=timezone.now(), end_date__gte=timezone.now()
             ).values()
         )
+        print(timezone.now)
 
         if len(events) > 0:
             return Response(data=events, status=ST_200)

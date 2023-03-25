@@ -38,7 +38,9 @@ class Event(models.Model):
     position = models.CharField(max_length=50, blank=True)
 
     def clean(self):
-        validate_event_date(self.start_date, self.end_date)
+        start_date_str = self.start_date.strftime("%Y-%m-%d %H:%M:%S")
+        end_date_str = self.end_date.strftime("%Y-%m-%d %H:%M:%S")
+        validate_event_date(start_date_str, end_date_str)
 
     def save(self, *args, **kwargs):
         self.position = f'[{self.latitude}, {self.longitude}]'
