@@ -22,7 +22,6 @@ from datetime import datetime
 from .validators import *
 import csv
 from os import remove
-from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework.permissions import IsAdminUser
 
 def generate_receipt_xml(partner):
