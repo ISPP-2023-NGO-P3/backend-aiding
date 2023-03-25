@@ -280,60 +280,71 @@ class ImportCSVView(views.APIView):
         return super().dispatch(request, *args, **kwargs)
     
     def post(self, request):
-        file=request.FILES["selectedFile"]
+        try:
+            file=request.FILES["selectedFile"]
+        except Exception as e:
+            error = {'error': "Se debe adjuntar un archivo"}
+            return Response(data=error, status=ST_409)
+
         obj=CSVFile.objects.create(file=file)
         path = "media/"+str(obj.file)
         ids_list=[]
-        with open(path) as csvFile:
-            csvReader=csv.DictReader(csvFile,delimiter=";")
-            contador_filas=2
-            for jd in csvReader:
-                try:
-                    validate_dni(jd['dni'])
-                    validate_iban(jd['iban'])
-                    validate_date(jd['cumpleanos'])
-                    validate_name(jd['ï»¿nombre'])
-                    validate_last_name(jd['apellidos'])
-                    validate_dni_blank(jd['dni'])
-                    validate_phone1(jd['telefono'])
-                    validate_birthdate(jd['cumpleanos'])
-                    validate_address(jd['direccion'])
-                    validate_postal_code(jd['codigo_postal'])
-                    validate_township(jd['municipio'])
-                    validate_province(jd['provincia'])
-                    validate_language(jd['idioma'])
-                    validate_iban_blank(jd['iban'])
-                    validate_account_holder(jd['titular_cuenta'])
-                    validate_state(jd['estado'])
-                    validate_sex(jd['sexo'])
-                except ValidationError as e:
-                    csvFile.close()
-                    obj.delete()
-                    remove(path)
-                    for partner_id in ids_list:
-                        partner=Partners.objects.get(id=partner_id)
-                        partner.delete()
-                    error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
-                    return Response(data=error, status=ST_409)
-                try:
-                    new_partner=Partners.objects.create(name=jd['ï»¿nombre'], last_name=jd['apellidos'],
-                    dni=jd['dni'], phone1=jd['telefono'], phone2=jd['telefono_adicional'], birthdate=jd['cumpleanos'], sex=jd['sexo'],
-                    email=jd['email'], address=jd['direccion'], postal_code=jd['codigo_postal'], township=jd['municipio'],
-                    province=jd['provincia'], language=jd['idioma'], iban=jd['iban'],  account_holder=jd['titular_cuenta'],
-                    state=jd['estado'])
-                    ids_list.append(new_partner.id)
+        try:
+            with open(path) as csvFile:
+                csvReader=csv.DictReader(csvFile,delimiter=";")
+                contador_filas=2
+                for jd in csvReader:
+                    try:
+                        validate_dni(jd['dni'])
+                        validate_iban(jd['iban'])
+                        validate_date(jd['cumpleanos'])
+                        validate_name(jd['ï»¿nombre'])
+                        validate_last_name(jd['apellidos'])
+                        validate_dni_blank(jd['dni'])
+                        validate_phone1(jd['telefono'])
+                        validate_birthdate(jd['cumpleanos'])
+                        validate_address(jd['direccion'])
+                        validate_postal_code(jd['codigo_postal'])
+                        validate_township(jd['municipio'])
+                        validate_province(jd['provincia'])
+                        validate_language(jd['idioma'])
+                        validate_iban_blank(jd['iban'])
+                        validate_account_holder(jd['titular_cuenta'])
+                        validate_state(jd['estado'])
+                        validate_sex(jd['sexo'])
+                    except ValidationError as e:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        for partner_id in ids_list:
+                            partner=Partners.objects.get(id=partner_id)
+                            partner.delete()
+                        error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
+                        return Response(data=error, status=ST_409)
+                    try:
+                        new_partner=Partners.objects.create(name=jd['ï»¿nombre'], last_name=jd['apellidos'],
+                        dni=jd['dni'], phone1=jd['telefono'], phone2=jd['telefono_adicional'], birthdate=jd['cumpleanos'], sex=jd['sexo'],
+                        email=jd['email'], address=jd['direccion'], postal_code=jd['codigo_postal'], township=jd['municipio'],
+                        province=jd['provincia'], language=jd['idioma'], iban=jd['iban'],  account_holder=jd['titular_cuenta'],
+                        state=jd['estado'])
+                        ids_list.append(new_partner.id)
 
-                except IntegrityError:
-                    csvFile.close()
-                    obj.delete()
-                    remove(path)
-                    for id in ids_list:
-                        partner=Partners.objects.get(id=id)
-                        partner.delete()
-                    error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
-                    return Response(data=error, status=ST_409)
-                
-                contador_filas=contador_filas+1
+                    except IntegrityError:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        for id in ids_list:
+                            partner=Partners.objects.get(id=id)
+                            partner.delete()
+                        error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
+                        return Response(data=error, status=ST_409)
+                    
+                    contador_filas=contador_filas+1
+        except UnicodeDecodeError as e:
+                obj.delete()
+                remove(path)
+                error = {'error': "El archivo no es válido"}
+                return Response(data=error, status=ST_409)
         csvFile.close()
         obj.delete()
         remove(path)
