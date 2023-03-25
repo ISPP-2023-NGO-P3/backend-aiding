@@ -12,9 +12,14 @@ from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
+from rest_framework.permissions import IsAdminUser
+
 from .validators import validate_nif
 
 class VolunteerManagement(views.APIView):
+
+    permission_classes = [IsAdminUser]
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
