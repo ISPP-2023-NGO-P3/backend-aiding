@@ -1,13 +1,17 @@
+import datetime
 import json
 from django.forms import ValidationError
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
+import pytz
 
 from rest_framework import views
 from rest_framework.response import Response
-from .validators import validate_event_date
+
+from local_settings import TIME_ZONE
+from .validators import validate_event_start_date, validate_event_end_date
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
 from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
@@ -45,7 +49,11 @@ class EventView(CsrfExemptMixin, views.APIView):
     def post(self, request):
         jd = json.loads(request.body)
         try:
-            validate_event_date(jd["start_date"], jd["end_date"])
+            user_tz = pytz.timezone(request.headers["timezone"])
+            start_date = user_tz.localize(datetime.datetime.strptime(jd["start_date"], "%Y-%m-%d %H:%M:%S"))
+            end_date = user_tz.localize(datetime.datetime.strptime(jd["end_date"], "%Y-%m-%d %H:%M:%S"))
+            validate_event_start_date(start_date)
+            validate_event_end_date(start_date, end_date)
         except ValidationError as e:
             return Response(data=e.message, status=ST_400)
         try:
@@ -57,11 +65,15 @@ class EventView(CsrfExemptMixin, views.APIView):
             if isinstance(coord, Response):
                 return coord
 
+            server_tz = pytz.timezone(TIME_ZONE)
+            start_date_server = start_date.astimezone(server_tz)
+            end_date_server = end_date.astimezone(server_tz)
+
             Event.objects.create(
                 title=jd["title"],
                 description=jd["description"],
-                start_date=jd["start_date"],
-                end_date=jd["end_date"],
+                start_date=start_date_server,
+                end_date=end_date_server,
                 places=jd["places"],
                 street=street,
                 number=number,
@@ -82,15 +94,24 @@ class EventView(CsrfExemptMixin, views.APIView):
         events = list(Event.objects.filter(id=event_id).values())
         if len(events) > 0:
             event = Event.objects.get(id=event_id)
+            if not is_future_event(event):
+                data = {"message": "Event is not active..."}
+                return Response(data=data, status=ST_400)
             try:
-                validate_event_date(jd["start_date"], jd["end_date"])
+
+                user_tz = pytz.timezone(request.headers["timezone"])
+                start_date = user_tz.localize(datetime.datetime.strptime(jd["start_date"], "%Y-%m-%d %H:%M:%S"))
+                end_date = user_tz.localize(datetime.datetime.strptime(jd["end_date"], "%Y-%m-%d %H:%M:%S"))
+
+                validate_event_start_date(start_date)
+                validate_event_end_date(start_date, end_date)
             except ValidationError as e:
                 return Response(data=e.message, status=ST_400)
             try:
                 event.title = jd["title"]
                 event.description = jd["description"]
-                event.start_date = jd["start_date"]
-                event.end_date = jd["end_date"]
+                event.start_date = start_date
+                event.end_date = end_date
                 event.places = jd["places"]
 
                 street = jd["street"]
@@ -150,3 +171,14 @@ class StartedEventView(CsrfExemptMixin, views.APIView):
         else:
             data = {"message": "No events found..."}
             return Response(data=data, status=ST_404)
+
+def is_future_event(event):
+    if event:
+        start_date = event.start_date
+        now = datetime.datetime.utcnow()
+        tz = pytz.timezone(TIME_ZONE)
+        now_aware = pytz.utc.localize(now).astimezone(tz)
+        print(start_date, now_aware)
+        return start_date > now_aware
+    else:
+        raise ValidationError("Event not found")

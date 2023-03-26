@@ -1,7 +1,8 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.forms import ValidationError
 
-from .validators import validate_event_date
+from .validators import validate_event_start_date, validate_event_end_date
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 from rest_framework.response import Response
@@ -13,8 +14,8 @@ class Event(models.Model):
 
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=500)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateTimeField(blank=False, validators=[validate_event_start_date])
+    end_date = models.DateTimeField(blank=False)
     places = models.PositiveIntegerField()
 
     street = models.CharField(blank=False, max_length=255)
@@ -37,9 +38,11 @@ class Event(models.Model):
     position = models.CharField(max_length=50, blank=True)
 
     def clean(self):
-        start_date_str = self.start_date.strftime("%Y-%m-%d %H:%M:%S")
-        end_date_str = self.end_date.strftime("%Y-%m-%d %H:%M:%S")
-        validate_event_date(start_date_str, end_date_str)
+        if not self.start_date:
+            raise ValidationError("Start date is required.")
+        if not self.end_date:
+            raise ValidationError("End date is required.")
+        validate_event_end_date(self.start_date, self.end_date)
 
     def save(self, *args, **kwargs):
         self.position = f'[{self.latitude}, {self.longitude}]'
