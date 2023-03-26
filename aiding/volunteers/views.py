@@ -110,21 +110,6 @@ class TurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
-    def list(self, request):
-        turns = Turn.objects.all()
-        datos = []
-        if len(turns)>0:
-            for turn in turns:
-                datos.append({
-                    'date': turn.date,
-                    'startTime': turn.startTime,
-                    'endTime': turn.endTime,
-                })
-            return Response(data=datos,status=ST_200)
-        else:
-            message = {'message': "turns not found..."}
-            return Response(data=message, status=ST_404)
-    
     def get(self, request, turn_id = 0):
         if (turn_id > 0):
             turn = list(Turn.objects.filter(id=turn_id).values())
@@ -135,7 +120,7 @@ class TurnView(views.APIView):
                 datos = {'message': "turn not found..."}
             return Response(data=datos, status=ST_404)
         else:
-            turn = list(Volunteer.objects.values())
+            turn = list(Turn.objects.values())
             if len(turn) > 0:
                 datos = {'turn': turn}
                 return Response(data=turn, status=ST_200)
@@ -178,11 +163,13 @@ class TurnView(views.APIView):
             turn.date = date
         
         start_time_str = jd.get('startTime', None)
+        start_time_str = start_time_str[0:5]
         if start_time_str:
             startTime = datetime.datetime.strptime(start_time_str, '%H:%M').time()
             turn.startTime = startTime
         
         end_time_str = jd.get('endTime', None)
+        end_time_str = end_time_str[0:5]
         if end_time_str:
             endTime = datetime.datetime.strptime(end_time_str, '%H:%M').time()
             turn.endTime = endTime
