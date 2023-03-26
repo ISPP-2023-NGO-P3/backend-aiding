@@ -1,6 +1,5 @@
-
-
 from django.forms import ValidationError
+from django.utils import timezone
 
 
 def validate_nif(nif):
@@ -12,3 +11,9 @@ def validate_nif(nif):
             raise ValidationError('La letra del NIF no es correcta')
     except ValueError:
         raise ValidationError('El formato del NIF no es correcto')
+    
+def validate_datetime(date,startTime, endTime):
+    if startTime >= endTime:
+        raise ValidationError('La hora de inicio debe ser anterior a la hora de fin')
+    if date < timezone.localdate():
+        raise ValidationError('La fecha debe ser posterior o igual a la fecha actual')
