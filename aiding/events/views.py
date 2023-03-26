@@ -49,7 +49,7 @@ class EventView(CsrfExemptMixin, views.APIView):
     def post(self, request):
         jd = json.loads(request.body)
         try:
-            user_tz = pytz.timezone(request.headers["timezone"])
+            user_tz = pytz.timezone(jd["userTimezone"])
             start_date = user_tz.localize(datetime.datetime.strptime(jd["start_date"], "%Y-%m-%d %H:%M:%S"))
             end_date = user_tz.localize(datetime.datetime.strptime(jd["end_date"], "%Y-%m-%d %H:%M:%S"))
             validate_event_start_date(start_date)
@@ -98,8 +98,7 @@ class EventView(CsrfExemptMixin, views.APIView):
                 data = {"message": "Event is not active..."}
                 return Response(data=data, status=ST_400)
             try:
-
-                user_tz = pytz.timezone(request.headers["timezone"])
+                user_tz = pytz.timezone(jd["userTimezone"])
                 start_date = user_tz.localize(datetime.datetime.strptime(jd["start_date"], "%Y-%m-%d %H:%M:%S"))
                 end_date = user_tz.localize(datetime.datetime.strptime(jd["end_date"], "%Y-%m-%d %H:%M:%S"))
 
@@ -159,12 +158,15 @@ class FutureEventView(CsrfExemptMixin, views.APIView):
 
 class StartedEventView(CsrfExemptMixin, views.APIView):
     def get(self, request):
+        now = datetime.datetime.utcnow()
+        tz = pytz.timezone(TIME_ZONE)
+        now_aware = pytz.utc.localize(now).astimezone(tz)
+
         events = list(
             Event.objects.filter(
-                start_date__lte=timezone.now(), end_date__gte=timezone.now()
+                start_date__lte=now_aware, end_date__gte=now_aware
             ).values()
         )
-        print(timezone.now)
 
         if len(events) > 0:
             return Response(data=events, status=ST_200)
@@ -178,7 +180,6 @@ def is_future_event(event):
         now = datetime.datetime.utcnow()
         tz = pytz.timezone(TIME_ZONE)
         now_aware = pytz.utc.localize(now).astimezone(tz)
-        print(start_date, now_aware)
         return start_date > now_aware
     else:
         raise ValidationError("Event not found")
