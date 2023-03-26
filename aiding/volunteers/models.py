@@ -39,4 +39,8 @@ class Volunteer(models.Model):
     truckKnowledge=models.BooleanField(blank=False, default=False)
     warehouseKnowledge=models.BooleanField(blank=False, default=False)
     otherKnowledge= models.CharField(max_length=250,blank=True)
-    
+
+class Turn(models.Model):
+    date = models.DateField(null=False)
+    startTime = models.TimeField(null=False)
+    endTime = models.TimeField(null=False)
