@@ -18,7 +18,7 @@ class VolunteerManagement(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get(self, request, volunteer_id = 0):
         if (volunteer_id > 0):
             volunteers = list(Volunteer.objects.filter(id=volunteer_id).values())
@@ -36,7 +36,7 @@ class VolunteerManagement(views.APIView):
             else:
                 datos = {'message': "Volunteers not found..."}
             return Response(data=datos, status=ST_404)
-  
+
     def post(self, request):
         jd = json.loads(request.body)
         try:
@@ -47,7 +47,7 @@ class VolunteerManagement(views.APIView):
         try:
             Volunteer.objects.create(name=jd['name'],last_name=jd['last_name'],num_volunteer=jd['num_volunteer'],
                                      nif=jd['nif'],place=jd['place'],phone=jd['phone'],email=jd['email'],
-                                     state=jd['state'],situation=jd['situation'],rol=jd['rol'],postal_code=jd[' '],
+                                     state=jd['state'],situation=jd['situation'],rol=jd['rol'],postal_code=jd['postal_code'],
                                      observations=jd['observations'],computerKnowledge=jd['computerKnowledge'],
                                      truckKnowledge=jd['truckKnowledge'],warehouseKnowledge=jd['warehouseKnowledge'],
                                      otherKnowledge=jd['otherKnowledge'])
@@ -93,7 +93,7 @@ class VolunteerManagement(views.APIView):
         else:
             datos = {'error': "Volunteer not found..."}
         return Response(data=datos, status=ST_409)
-    
+
     def delete(self, request, volunteer_id):
         sections = list(Volunteer.objects.filter(id=volunteer_id).values())
         if len(sections) > 0:
@@ -103,5 +103,5 @@ class VolunteerManagement(views.APIView):
         else:
             datos = {"error": "Volunteer not found..."}
             return Response(data=datos, status=ST_404)
-    
+
 
