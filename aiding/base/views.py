@@ -136,6 +136,7 @@ class ContactView(views.APIView):
         Contact.objects.create(
             name=jd['name'],
             email=jd['email'],
+            phone=jd['phone'],
             subject=jd['subject'],
             message=jd['message'],
         )
