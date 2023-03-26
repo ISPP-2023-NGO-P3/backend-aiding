@@ -10,7 +10,7 @@ import pytz
 from rest_framework import views
 from rest_framework.response import Response
 
-from local_settings import TIME_ZONE
+from aiding.settings import TIME_ZONE
 from .validators import validate_event_start_date, validate_event_end_date
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
