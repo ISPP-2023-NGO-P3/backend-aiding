@@ -4,6 +4,7 @@ from django.forms import ValidationError
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db import IntegrityError
 import pytz
 
@@ -18,6 +19,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
+from rest_framework.permissions import IsAdminUser
 
 
 from .models import Event
@@ -28,7 +30,10 @@ class CsrfExemptMixin:
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
+
 class EventView(CsrfExemptMixin, views.APIView):
+
+
     def get(self, request, event_id=0):
         if event_id > 0:
             events = list(Event.objects.filter(id=event_id).values())
@@ -46,12 +51,15 @@ class EventView(CsrfExemptMixin, views.APIView):
                 data = {"message": "No events found..."}
                 return Response(data=data, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def post(self, request):
         jd = json.loads(request.body)
         try:
             user_tz = pytz.timezone(jd["userTimezone"])
-            start_date = user_tz.localize(datetime.datetime.strptime(jd["start_date"], "%Y-%m-%d %H:%M:%S"))
-            end_date = user_tz.localize(datetime.datetime.strptime(jd["end_date"], "%Y-%m-%d %H:%M:%S"))
+            start_date = user_tz.localize(datetime.datetime.strptime(
+                jd["start_date"], "%Y-%m-%d %H:%M:%S"))
+            end_date = user_tz.localize(datetime.datetime.strptime(
+                jd["end_date"], "%Y-%m-%d %H:%M:%S"))
             validate_event_start_date(start_date)
             validate_event_end_date(start_date, end_date)
         except ValidationError as e:
@@ -89,6 +97,7 @@ class EventView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(staff_member_required)
     def put(self, request, event_id):
         jd = json.loads(request.body)
         events = list(Event.objects.filter(id=event_id).values())
@@ -99,8 +108,10 @@ class EventView(CsrfExemptMixin, views.APIView):
                 return Response(data=data, status=ST_400)
             try:
                 user_tz = pytz.timezone(jd["userTimezone"])
-                start_date = user_tz.localize(datetime.datetime.strptime(jd["start_date"], "%Y-%m-%d %H:%M:%S"))
-                end_date = user_tz.localize(datetime.datetime.strptime(jd["end_date"], "%Y-%m-%d %H:%M:%S"))
+                start_date = user_tz.localize(datetime.datetime.strptime(
+                    jd["start_date"], "%Y-%m-%d %H:%M:%S"))
+                end_date = user_tz.localize(datetime.datetime.strptime(
+                    jd["end_date"], "%Y-%m-%d %H:%M:%S"))
 
                 validate_event_start_date(start_date)
                 validate_event_end_date(start_date, end_date)
@@ -134,6 +145,7 @@ class EventView(CsrfExemptMixin, views.APIView):
             except IntegrityError as e:
                 return Response(data=e.message, status=ST_400)
 
+    @method_decorator(staff_member_required)
     def delete(self, request, event_id):
         events = list(Event.objects.filter(id=event_id).values())
         if len(events) > 0:
@@ -144,6 +156,7 @@ class EventView(CsrfExemptMixin, views.APIView):
         else:
             data = {"message": "Event not found..."}
             return Response(data=data, status=ST_404)
+
 
 class FutureEventView(CsrfExemptMixin, views.APIView):
     def get(self, request):
@@ -173,6 +186,7 @@ class StartedEventView(CsrfExemptMixin, views.APIView):
         else:
             data = {"message": "No events found..."}
             return Response(data=data, status=ST_404)
+
 
 def is_future_event(event):
     if event:
