@@ -96,7 +96,7 @@ class UserView(views.APIView):
         jd = json.loads(jd)
         auth_user = request.user
         if auth_user.is_authenticated and auth_user.is_admin:            
-            User.objects.create(username=jd['username'],password=make_password(jd['password'],is_admin=jd['is_admin']))
+            User.objects.create(username=jd['username'],password=make_password(jd['password']),is_admin=jd['is_admin'])
             data = {'message': "Success"}
             return Response(data=data, status=ST_201)
         else:
