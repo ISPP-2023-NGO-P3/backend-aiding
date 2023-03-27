@@ -71,7 +71,8 @@ class UserView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
-
+    
+    @method_decorator(login_required)
     def get(self, request, user_id = 0):
         if (user_id > 0):
             users = list(User.objects.filter(id=user_id).values())
@@ -89,18 +90,20 @@ class UserView(views.APIView):
                 data = {'message': "users not found..."}
                 return Response(data=data, status=ST_404)
 
+    @method_decorator(login_required)
     def post(self, request):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
         auth_user = request.user
         if auth_user.is_authenticated and auth_user.is_admin:            
-            User.objects.create(username=jd['username'],password=make_password(jd['password']))
+            User.objects.create(username=jd['username'],password=make_password(jd['password'],is_admin=jd['is_admin']))
             data = {'message': "Success"}
             return Response(data=data, status=ST_201)
         else:
             data = {'message': "You do not have permissions."}
             return Response(data=data, status=ST_403)
-
+    
+    @method_decorator(login_required)
     def put(self, request, user_id):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
@@ -113,6 +116,7 @@ class UserView(views.APIView):
                 user = User.objects.get(id=user_id)
                 user.username = jd['username']
                 user.password = make_password(jd['password'])
+                user.is_admin = jd['is_admin']
                 user.save()
                 data = {'message': "Success"}
                 return Response(data=data, status=ST_200)
