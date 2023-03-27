@@ -1,5 +1,6 @@
 import json
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
@@ -12,8 +13,11 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN as ST_403,
     HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,    
-    HTTP_204_NO_CONTENT as ST_204
+    HTTP_204_NO_CONTENT as ST_204,
+    HTTP_400_BAD_REQUEST as ST_400,
+    HTTP_205_RESET_CONTENT as ST_205,
 )
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from .models import Contact, User
 
@@ -37,18 +41,31 @@ class LoginView(views.APIView):
             data = {'message' : 'Login unsuccessful'}
             return Response(data, status=ST_401)
 
-class LogoutView(views.APIView):
+""" class LogoutView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request):
+    def get(self, request):
         if request.user.is_authenticated:
             logout(request)
             data = {'message' : 'Logout successful!'}
         else:
             data = {'message' : 'You are not logged in!'}
-        return Response(data, status=ST_200)
+        return Response(data, status=ST_200) """
+
+
+class LogoutView(views.APIView):
+    @method_decorator(login_required)
+    def post(self, request):
+          try:
+               refresh_token = request.data["refresh_token"]
+               token = RefreshToken(refresh_token)
+               token.blacklist()
+               return Response(status=ST_205)
+          except Exception as e:
+               print(e)
+               return Response(status=ST_400)
 
 class UserView(views.APIView):
     @method_decorator(csrf_exempt)
