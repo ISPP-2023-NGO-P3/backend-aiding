@@ -111,6 +111,8 @@ class VolunteerManagement(views.APIView):
 
 class TurnView(views.APIView):
 
+    permission_classes = [IsAdminUser]
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
