@@ -3,6 +3,10 @@ import json
 from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
+
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK as ST_200
@@ -13,6 +17,7 @@ from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
 from .models import Advertisement, Multimedia, Resource, Section
 
+from django.contrib.auth.decorators import login_required
 
 class CsrfExemptMixin:
     @method_decorator(csrf_exempt)
@@ -20,7 +25,9 @@ class CsrfExemptMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+
 class SectionView(CsrfExemptMixin, views.APIView):
+
     def get(self, request, section_id=0):
         if section_id > 0:
             section = list(Section.objects.filter(id=section_id).values())
@@ -39,12 +46,13 @@ class SectionView(CsrfExemptMixin, views.APIView):
                 datos = {"message": "sections not found..."}
             return Response(data=datos, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def post(self, request):
-        jd = json.loads(request.body)
-        name = jd["name"]
+        print(self.request.user)
+        name = request.data["name"]
 
         try:
-            active = jd["active"]
+            active = request.data["active"]
         except KeyError:
             active = True
 
@@ -58,6 +66,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(staff_member_required)
     def put(self, request, section_id):
         jd = json.loads(request.body)
         sections = list(Section.objects.filter(id=section_id).values())
@@ -78,6 +87,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
             datos = {"message": "Section not found..."}
         return Response(data=datos, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def delete(self, request, section_id):
         sections = list(Section.objects.filter(id=section_id).values())
         if len(sections) > 0:
@@ -92,8 +102,7 @@ class SectionView(CsrfExemptMixin, views.APIView):
 class MultimediaView(CsrfExemptMixin, views.APIView):
     def get(self, request, multimedia_id=0):
         if multimedia_id > 0:
-            multimedia = list(Multimedia.objects.filter(
-                id=multimedia_id).values())
+            multimedia = list(Multimedia.objects.filter(id=multimedia_id).values())
             if len(multimedia) > 0:
                 multimedia = multimedia[0]
                 return Response(data=multimedia, status=ST_200)
@@ -126,8 +135,7 @@ class MultimediaView(CsrfExemptMixin, views.APIView):
 
     def put(self, request, multimedia_id):
         jd = json.loads(request.body)
-        multimedias = list(Multimedia.objects.filter(
-            id=multimedia_id).values())
+        multimedias = list(Multimedia.objects.filter(id=multimedia_id).values())
         if len(multimedias) > 0:
             adv = Advertisement.objects.filter(id=jd["advertisement_id"])
             if len(adv) > 0:
@@ -147,8 +155,7 @@ class MultimediaView(CsrfExemptMixin, views.APIView):
         return Response(data=datos, status=ST_404)
 
     def delete(self, request, multimedia_id):
-        multimedias = list(Multimedia.objects.filter(
-            id=multimedia_id).values())
+        multimedias = list(Multimedia.objects.filter(id=multimedia_id).values())
         if len(multimedias) > 0:
             Multimedia.objects.filter(id=multimedia_id).delete()
             datos = {"message": "Success"}
@@ -162,15 +169,17 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
     def get(self, request, advertisement_id=0):
         if advertisement_id > 0:
             advertisement = list(
-                Advertisement.objects.filter(id=advertisement_id).values("id",
-                            "title",
-                            "abstract",
-                            "body",
-                            "url",
-                            "section_id__name",
-                            "section_id",
-                            "front_page",
-                            "creation_date")
+                Advertisement.objects.filter(id=advertisement_id).values(
+                    "id",
+                    "title",
+                    "abstract",
+                    "body",
+                    "url",
+                    "section_id__name",
+                    "section_id",
+                    "front_page",
+                    "creation_date",
+                )
             )
             if len(advertisement) > 0:
                 advertisement = advertisement[0]
@@ -195,7 +204,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                             "url",
                             "section_id__name",
                             "front_page",
-                            "creation_date"
+                            "creation_date",
                         )
                         for adv in advertisements_with_section_id:
                             advertisements.append(adv)
@@ -207,6 +216,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                 datos = {"message": "Sections not found..."}
                 return Response(data=datos, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def post(self, request):
         try:
             section_id = request.POST.get("section_id")
@@ -216,7 +226,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             url = request.POST.get("url")
             section = Section.objects.get(id=section_id)
             front_page = request.FILES.get("front_page")
-            
+
             Advertisement.objects.create(
                 title=title,
                 abstract=abstract,
@@ -236,6 +246,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(staff_member_required)
     def put(self, request, advertisement_id):
 
         section_id = request.POST.get("section_id")
@@ -276,6 +287,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
             datos = {"message": "Advertisement not found"}
             return Response(data=datos, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def delete(self, request, advertisement_id):
         advertisements = list(
             Advertisement.objects.filter(id=advertisement_id).values()
@@ -293,19 +305,19 @@ class AdvertisementSectionView(CsrfExemptMixin, views.APIView):
     def get(self, request, section_id=0):
         if section_id > 0:
             try:
-                section = Section.objects.filter(
-                    id=section_id).filter(active=True)
+                section = Section.objects.filter(id=section_id).filter(active=True)
                 section_id = section.get().__getattribute__("id")
 
                 advertisements_with_section_id = list(
                     Advertisement.objects.filter(section_id=section_id).values(
-                            "id",
-                            "title",
-                            "abstract",
-                            "url",
-                            "section_id__name",
-                            "front_page",
-                            "creation_date")
+                        "id",
+                        "title",
+                        "abstract",
+                        "url",
+                        "section_id__name",
+                        "front_page",
+                        "creation_date",
+                    )
                 )
                 return Response(data=advertisements_with_section_id, status=ST_200)
             except Exception:
@@ -334,13 +346,13 @@ class ResourceView(CsrfExemptMixin, views.APIView):
                 data = {"message": "Resources not found..."}
             return Response(data=data, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def post(self, request):
         jd = json.loads(request.body)
         try:
             street = jd["street"]
             number = jd["number"]
             city = jd["city"]
-
             coord = Resource.get_coordinates(self, street, number, city)
             if isinstance(coord, Response):
                 return coord
@@ -351,7 +363,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
                 street=street,
                 number=number,
                 city=city,
-                resource_type=jd['resource_type'],
+                resource_type=jd["resource_type"],
                 additional_comments=jd["additional_comments"],
                 latitude=coord[0],
                 longitude=coord[1],
@@ -364,6 +376,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
             }
             return Response(data=error, status=ST_409)
 
+    @method_decorator(staff_member_required)
     def put(self, request, resource_id):
         jd = json.loads(request.body)
         resources = list(Resource.objects.filter(id=resource_id).values())
@@ -375,7 +388,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
                 resource.description = jd["description"]
                 resource.contact_phone = jd["contact_phone"]
                 resource.additional_comments = jd["additional_comments"]
-                resource.resource_type=jd['resource_type']
+                resource.resource_type = jd["resource_type"]
                 street = jd["street"]
                 number = jd["number"]
                 city = jd["city"]
@@ -404,6 +417,7 @@ class ResourceView(CsrfExemptMixin, views.APIView):
             data = {"message": "Resource not found..."}
             return Response(data=data, status=ST_404)
 
+    @method_decorator(staff_member_required)
     def delete(self, request, resource_id):
         resources = list(Resource.objects.filter(id=resource_id).values())
         if len(resources) > 0:
@@ -413,5 +427,3 @@ class ResourceView(CsrfExemptMixin, views.APIView):
         else:
             data = {"message": "Resource not found..."}
             return Response(data=data, status=ST_404)
-
-

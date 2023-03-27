@@ -6,8 +6,8 @@ admin.site.register(User)
 admin.site.register(Notification)
 
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'datetime', 'subject', 'message', 'isAnswered')
-    list_filter =  ('email', 'datetime', 'subject', 'isAnswered')
-    search_fields = ('email', 'datetime', 'subject')
+    list_display = ('name', 'email', 'phone', 'datetime', 'subject', 'message', 'isAnswered')
+    list_filter =  ('email','phone', 'datetime', 'subject', 'isAnswered')
+    search_fields = ('email', 'phone', 'datetime', 'subject')
 
 admin.site.register(Contact, ContactAdmin)
