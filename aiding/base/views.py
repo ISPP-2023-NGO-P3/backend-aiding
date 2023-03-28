@@ -41,20 +41,6 @@ class LoginView(views.APIView):
             data = {'message' : 'Login unsuccessful'}
             return Response(data, status=ST_401)
 
-""" class LogoutView(views.APIView):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request):
-        if request.user.is_authenticated:
-            logout(request)
-            data = {'message' : 'Logout successful!'}
-        else:
-            data = {'message' : 'You are not logged in!'}
-        return Response(data, status=ST_200) """
-
-
 class LogoutView(views.APIView):
     @method_decorator(login_required)
     def post(self, request):

@@ -3,8 +3,6 @@ import json
 from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
-from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 
 from rest_framework import views
@@ -16,8 +14,6 @@ from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
 from .models import Advertisement, Multimedia, Resource, Section
-
-from django.contrib.auth.decorators import login_required
 
 class CsrfExemptMixin:
     @method_decorator(csrf_exempt)
