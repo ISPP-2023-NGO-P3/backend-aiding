@@ -1,3 +1,4 @@
+from django.core.mail import EmailMultiAlternatives
 import json
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
@@ -19,6 +20,10 @@ from rest_framework.status import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
+
+from aiding.settings import EMAIL_HOST_USER
+from django.utils.encoding import smart_str
+from unidecode import unidecode
 from .models import Contact, User
 
 class LoginView(views.APIView):
@@ -176,3 +181,28 @@ class ContactView(views.APIView):
         else:
             datos = {'message': "Update not found..."}
             return Response(data=datos, status=ST_404)
+        
+
+def send_notification(recipients, subject, message):
+
+    # Asegúrate de que los datos estén en formato Unicode
+    recipients = [smart_str(recipients) for recipients in recipients]
+    subject = smart_str(subject)
+    message = smart_str(message)
+
+    recipients = [unidecode(recipients) for recipients in recipients]
+    subject = unidecode(subject)
+    message = unidecode(message)
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=message,
+        from_email=unidecode(EMAIL_HOST_USER),
+        to=recipients,
+    )
+
+    email.attach_alternative(message, "text/html")
+    try:
+        email.send(fail_silently=False)
+    except Exception as e:
+        print(f"Error al enviar el correo electrónico: {e}")

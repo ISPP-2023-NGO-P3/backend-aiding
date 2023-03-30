@@ -124,6 +124,14 @@ DATABASES = {
     }
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-mail.outlook.com' # o el servidor SMTP de tu preferencia
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'aidingSevilla@outlook.es' # o el correo electrónico desde el que quieres enviar los correos
+EMAIL_HOST_PASSWORD = 'iriaLaContra' # la contraseña de tu correo electrónico
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
