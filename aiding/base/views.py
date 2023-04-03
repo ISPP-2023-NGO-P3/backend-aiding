@@ -20,8 +20,7 @@ from rest_framework.status import (
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from .models import Contact, User
-
-   
+from django.contrib.auth.models import Group
 class RoleView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -40,7 +39,6 @@ class RoleView(views.APIView):
             
         data = {'role': role}
         return Response(data=data, status=ST_200)
-    
 class LogoutView(views.APIView):
     @method_decorator(login_required)
     def post(self, request):
@@ -52,7 +50,6 @@ class LogoutView(views.APIView):
           except Exception as e:
                print(e)
                return Response(status=ST_400)
-
 class UserView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -81,8 +78,9 @@ class UserView(views.APIView):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
         auth_user = request.user
-        if auth_user.is_authenticated and auth_user.is_admin:            
-            User.objects.create(username=jd['username'],password=make_password(jd['password']),is_admin=jd['is_admin'])
+        if auth_user.is_authenticated and auth_user.is_admin:
+            role = Group.objects.get(name=jd['roles_id'])
+            User.objects.create(username=jd['username'],password=make_password(jd['password']),is_admin=jd['is_admin'], roles=role)
             data = {'message': "Success"}
             return Response(data=data, status=ST_201)
         else:
@@ -94,15 +92,17 @@ class UserView(views.APIView):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
         users = list(User.objects.filter(id=user_id).values())
-
         auth_user = request.user
-
         if auth_user.is_authenticated and auth_user.is_admin:
             if len(users) > 0:
+                print(jd['roles_id'])
+                role = Group.objects.get(name=jd['roles_id'])
+                print(role)
                 user = User.objects.get(id=user_id)
                 user.username = jd['username']
                 user.password = make_password(jd['password'])
                 user.is_admin = jd['is_admin']
+                #user.roles = role
                 user.save()
                 data = {'message': "Success"}
                 return Response(data=data, status=ST_200)
@@ -114,7 +114,6 @@ class UserView(views.APIView):
             data = {'message': "You do not have permissions."}
             return Response(data=data, status=ST_403)
         
-
 class ContactView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
