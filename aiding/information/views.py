@@ -159,15 +159,17 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
     def get(self, request, advertisement_id=0):
         if advertisement_id > 0:
             advertisement = list(
-                Advertisement.objects.filter(id=advertisement_id).values("id",
-                            "title",
-                            "abstract",
-                            "body",
-                            "url",
-                            "section_id__name",
-                            "section_id",
-                            "front_page",
-                            "creation_date")
+                Advertisement.objects.filter(id=advertisement_id).values(
+                    "id",
+                    "title",
+                    "abstract",
+                    "body",
+                    "url",
+                    "section_id__name",
+                    "section_id",
+                    "front_page",
+                    "creation_date",
+                ).order_by('-creation_date')
             )
             if len(advertisement) > 0:
                 advertisement = advertisement[0]
@@ -192,8 +194,8 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                             "url",
                             "section_id__name",
                             "front_page",
-                            "creation_date"
-                        )
+                            "creation_date",
+                        ).order_by('-creation_date')
                         for adv in advertisements_with_section_id:
                             advertisements.append(adv)
                     return Response(data=advertisements, status=ST_200)
@@ -297,13 +299,14 @@ class AdvertisementSectionView(CsrfExemptMixin, views.APIView):
 
                 advertisements_with_section_id = list(
                     Advertisement.objects.filter(section_id=section_id).values(
-                            "id",
-                            "title",
-                            "abstract",
-                            "url",
-                            "section_id__name",
-                            "front_page",
-                            "creation_date")
+                        "id",
+                        "title",
+                        "abstract",
+                        "url",
+                        "section_id__name",
+                        "front_page",
+                        "creation_date",
+                    ).order_by('-creation_date')
                 )
                 return Response(data=advertisements_with_section_id, status=ST_200)
             except Exception:
