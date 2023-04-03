@@ -22,11 +22,18 @@ class MultimediaAdmin(admin.ModelAdmin):
     search_fields = ("advertisement",)
 
 
+class ResourceTypeAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    list_filter = ("name",)
+    search_fields = ("name",)
+
+
 class ResourceAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "title",
         "description",
+        "contact_phone",
         "number",
         "street",
         "city",
@@ -37,6 +44,7 @@ class ResourceAdmin(admin.ModelAdmin):
         "id",
         "title",
         "description",
+        "contact_phone",
         "number",
         "street",
         "city",
@@ -47,6 +55,7 @@ class ResourceAdmin(admin.ModelAdmin):
         "id",
         "title",
         "description",
+        "contact_phone",
         "number",
         "street",
         "city",

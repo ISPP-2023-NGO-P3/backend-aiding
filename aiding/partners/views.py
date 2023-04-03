@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString 
 import json
 from django.forms import ValidationError
-from .validators import validate_date, validate_dni, validate_iban
+from .validators import validate_date, validate_dni, validate_iban, validate_name, validate_last_name, validate_dni_blank,validate_phone1,validate_birthdate,validate_address,validate_account_holder,validate_iban_blank,validate_language,validate_postal_code,validate_province,validate_township,validate_sex,validate_state
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -17,9 +17,12 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from django.http.response import JsonResponse
-from .models import Partners, Donation, Communication
+from .models import Partners, Donation, Communication, CSVFile
 from datetime import datetime
 from .validators import *
+import csv
+from os import remove
+from rest_framework.permissions import IsAdminUser
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
@@ -59,6 +62,9 @@ def download_receipt_xml(request,partner_id):
         return HttpResponse(status=404)
 
 class PartnerManagement(views.APIView):
+
+    permission_classes = [IsAdminUser]
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -143,8 +149,10 @@ class PartnerManagement(views.APIView):
         else:
             datos = {'message': "Partner not found..."}
         return Response(data=error, status=ST_409)
-    
+
 class DonationView(View):
+
+    permission_classes = [IsAdminUser]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -193,8 +201,10 @@ def get_don_part(request, partner_id):
     donation = Donation.objects.filter(partner=partner)
     datos = list(donation.values())[0]
     return JsonResponse(datos, safe=False)
-    
+
 class CommunicationView(View):
+
+    permission_classes = [IsAdminUser]
     
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -209,7 +219,7 @@ class CommunicationView(View):
             else:
                 return JsonResponse(list(communications.values()), safe = False)
         return JsonResponse(list(communications.values()), safe = False)
-
+        
     def post(self, request, partner_id):
         jd = json.loads(request.body)
         part = Partners.objects.filter(id = partner_id)
@@ -259,3 +269,83 @@ class CommunicationView(View):
         else:
             data = {'message': 'Partner not found...'}
         return JsonResponse(data)
+
+class ImportCSVView(views.APIView):
+
+    permission_classes = [IsAdminUser]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def post(self, request):
+        try:
+            file=request.FILES["selectedFile"]
+        except Exception as e:
+            error = {'error': "Se debe adjuntar un archivo"}
+            return Response(data=error, status=ST_409)
+
+        obj=CSVFile.objects.create(file=file)
+        path = "media/"+str(obj.file)
+        ids_list=[]
+        try:
+            with open(path) as csvFile:
+                csvReader=csv.DictReader(csvFile,delimiter=";")
+                contador_filas=2
+                for jd in csvReader:
+                    try:
+                        validate_dni(jd['dni'])
+                        validate_iban(jd['iban'])
+                        validate_date(jd['cumpleanos'])
+                        validate_name(jd['ï»¿nombre'])
+                        validate_last_name(jd['apellidos'])
+                        validate_dni_blank(jd['dni'])
+                        validate_phone1(jd['telefono'])
+                        validate_birthdate(jd['cumpleanos'])
+                        validate_address(jd['direccion'])
+                        validate_postal_code(jd['codigo_postal'])
+                        validate_township(jd['municipio'])
+                        validate_province(jd['provincia'])
+                        validate_language(jd['idioma'])
+                        validate_iban_blank(jd['iban'])
+                        validate_account_holder(jd['titular_cuenta'])
+                        validate_state(jd['estado'])
+                        validate_sex(jd['sexo'])
+                    except ValidationError as e:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        for partner_id in ids_list:
+                            partner=Partners.objects.get(id=partner_id)
+                            partner.delete()
+                        error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
+                        return Response(data=error, status=ST_409)
+                    try:
+                        new_partner=Partners.objects.create(name=jd['ï»¿nombre'], last_name=jd['apellidos'],
+                        dni=jd['dni'], phone1=jd['telefono'], phone2=jd['telefono_adicional'], birthdate=jd['cumpleanos'], sex=jd['sexo'],
+                        email=jd['email'], address=jd['direccion'], postal_code=jd['codigo_postal'], township=jd['municipio'],
+                        province=jd['provincia'], language=jd['idioma'], iban=jd['iban'],  account_holder=jd['titular_cuenta'],
+                        state=jd['estado'])
+                        ids_list.append(new_partner.id)
+
+                    except IntegrityError:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        for id in ids_list:
+                            partner=Partners.objects.get(id=id)
+                            partner.delete()
+                        error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
+                        return Response(data=error, status=ST_409)
+                    
+                    contador_filas=contador_filas+1
+        except UnicodeDecodeError as e:
+                obj.delete()
+                remove(path)
+                error = {'error': "El archivo no es válido"}
+                return Response(data=error, status=ST_409)
+        csvFile.close()
+        obj.delete()
+        remove(path)
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
