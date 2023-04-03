@@ -21,26 +21,26 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from .models import Contact, User
 
-class LoginView(views.APIView):
+   
+class RoleView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(csrf_exempt)
-    def post(self, request):
-        if request.user.is_authenticated:
-            data = {'message' : 'You are already logged in'}
-            return Response(data, status=ST_401)
-        jd = json.loads(request.body)
-        user = authenticate(username = jd['username'], password = jd['password'])
-        if user is not None:
-            login(request, user)
-            data = {'message' : 'Login successful!'}
-            return Response(data, status=ST_200)
+    @method_decorator(login_required)
+    def get(self, request):
+        user = request.user
+        role = None
+        if user.is_admin:
+            role = 'admin'
+        elif user.roles != None:
+            role = str(request.user.roles)
         else:
-            data = {'message' : 'Login unsuccessful'}
-            return Response(data, status=ST_401)
-
+            role = 'user'
+            
+        data = {'role': role}
+        return Response(data=data, status=ST_200)
+    
 class LogoutView(views.APIView):
     @method_decorator(login_required)
     def post(self, request):
