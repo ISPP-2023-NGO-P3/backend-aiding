@@ -44,3 +44,8 @@ class Turn(models.Model):
     date = models.DateField(null=False)
     startTime = models.TimeField(null=False)
     endTime = models.TimeField(null=False)
+
+class VolunteerTurn(models.Model):
+    volunteer= models.ForeignKey(Volunteer, on_delete= models.CASCADE, related_name='volunteer')
+    turn= models.ForeignKey(Turn, on_delete= models.CASCADE, related_name='turn')
+    

@@ -5,7 +5,7 @@ from django.forms import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
-from .models import Volunteer, Turn
+from .models import Volunteer, Turn, VolunteerTurn
 import datetime
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
@@ -202,3 +202,77 @@ class TurnView(views.APIView):
             datos = {'message': "Turn not found..."}
             return Response(data=datos, status=ST_409)
 
+class VolunteerTurnView(views.APIView):
+    permission_classes = [IsAdminUser]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request, volunteerTurn_id = 0):
+        if (volunteerTurn_id > 0):
+            volunteerTurn = list(VolunteerTurn.objects.filter(id=volunteerTurn_id).values())
+            if len(volunteerTurn) > 0:
+                volunteerTurn = volunteerTurn[0]
+                return Response(data=volunteerTurn, status=ST_200)
+            else:
+                datos = {'message': "Volunteer turn not found..."}
+            return Response(data=datos, status=ST_404)
+        else:
+            volunteerTurn = list(VolunteerTurn.objects.values())
+            if len(volunteerTurn) > 0:
+                datos = {'volunteerTurn': volunteerTurn}
+                return Response(data=volunteerTurn, status=ST_200)
+            else:
+                datos = {'message': "Volunteer turn not found..."}
+            return Response(data=datos, status=ST_404)
+        
+    
+    def post(self,request):  
+        jd = json.loads(request.body)
+        volunteer_id= jd['volunteer_id']
+        turn_id= jd['turn_id']
+        try:
+            volunteer= Volunteer.objects.get(id=volunteer_id)
+            turn= Turn.objects.get(id=turn_id)
+            VolunteerTurn.objects.create(volunteer=volunteer,turn=turn)
+            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_201)
+        except Volunteer.DoesNotExist:
+            datos = {'message': "Volunteer not found..."}
+            return Response(data=datos, status=ST_404)
+        except Turn.DoesNotExist:
+            datos = {'message': "Turn not found..."}
+            return Response(data=datos, status=ST_404)
+        
+    def put(self,request,volunteerTurn_id): 
+        jd = json.loads(request.body)
+        volunteer_id= jd['volunteer_id']
+        turn_id= jd['turn_id']
+        try:
+            volunteerTurn=VolunteerTurn.objects.get(id=volunteerTurn_id)
+            volunteerTurn.volunteer= Volunteer.objects.get(id=volunteer_id)
+            volunteerTurn.turn=Turn.objects.get(id=turn_id)
+            volunteerTurn.save()
+            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_201)
+        except Volunteer.DoesNotExist:
+            datos = {'message': "Volunteer not found..."}
+            return Response(data=datos, status=ST_404)
+        except Turn.DoesNotExist:
+            datos = {'message': "Turn not found..."}
+            return Response(data=datos, status=ST_404)
+        except VolunteerTurn.DoesNotExist:
+            datos = {'message': "Volunteer Turn not found..."}
+            return Response(data=datos, status=ST_409)
+        
+    def delete(self, request, volunteerTurn_id):
+        try:
+            volunteerTurn = VolunteerTurn.objects.get(id=volunteerTurn_id)
+            volunteerTurn.delete()
+            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_204)
+
+        except VolunteerTurn.DoesNotExist:
+            datos = {'message': "Volunteer Turn not found..."}
+            return Response(data=datos, status=ST_409)
