@@ -203,7 +203,7 @@ class TurnView(views.APIView):
             return Response(data=datos, status=ST_409)
 
 class VolunteerTurnView(views.APIView):
-    #permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -235,10 +235,9 @@ class VolunteerTurnView(views.APIView):
         try:
             volunteer= Volunteer.objects.get(id=volunteer_id)
             turn= Turn.objects.get(id=turn_id)
-            volunteerTurns=VolunteerTurn.objects.filter(volunteer=volunteer,turn=turn)
-            if len(volunteerTurns) > 0:
-                raise ValidationError('Este voluntario ya tiene asignado el mismo turno')
-            VolunteerTurn.objects.create(volunteer=volunteer,turn=turn)
+            volunteerTurn=VolunteerTurn(volunteer=volunteer,turn=turn)
+            volunteerTurn.clean()
+            volunteerTurn.save()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
         except Volunteer.DoesNotExist:
@@ -257,13 +256,9 @@ class VolunteerTurnView(views.APIView):
         turn_id= jd['turn_id']
         try:
             volunteerTurn=VolunteerTurn.objects.get(id=volunteerTurn_id)
-            volunteer=Volunteer.objects.get(id=volunteer_id)
-            turn=Turn.objects.get(id=turn_id)
-            volunteerTurns=VolunteerTurn.objects.filter(volunteer=volunteer,turn=turn)
-            if len(volunteerTurns) > 0:
-                raise ValidationError('Este voluntario ya tiene asignado el mismo turno')
-            volunteerTurn.volunteer= volunteer
-            volunteerTurn.turn=turn
+            volunteerTurn.volunteer=Volunteer.objects.get(id=volunteer_id)
+            volunteerTurn.turn=Turn.objects.get(id=turn_id)
+            volunteerTurn.clean()
             volunteerTurn.save()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
