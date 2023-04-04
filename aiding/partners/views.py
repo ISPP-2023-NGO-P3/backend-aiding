@@ -180,10 +180,12 @@ class DonationView(View):
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)
 
-        date_str = jd['date']
+        date_str = jd['start_date']
         date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-        Donation.objects.create(partner=partner, date=date,
-                                amount=amount, periodicity=periodicity)
+        year = jd['year']
+        year = datetime.datetime.strptime(year, '%Y').date()
+        Donation.objects.create(partner=partner, start_date=date,
+                                amount=amount, periodicity=periodicity, year=year)
         datos = {'message': "Success"}
         return JsonResponse(datos)
     
@@ -195,6 +197,31 @@ class DonationView(View):
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
+
+
+    def put(self, request, partner_id):
+        jd = json.loads(request.body)
+        amount = jd['amount']
+        periodicity = jd['periodicity']
+        
+        try:
+            partner = Partners.objects.get(id=partner_id, state='Activo')
+        except Partners.DoesNotExist:
+            datos = {'message': "Partner not found or not active"}
+            return JsonResponse(datos, status=400)
+        
+        try:
+            donation = Donation.objects.filter(partner=partner).latest('start_date')
+        except Donation.DoesNotExist:
+            datos = {'message': "Donation not found..."}
+            return JsonResponse(datos)
+
+        donation.amount = amount
+        donation.periodicity = periodicity
+        donation.save()
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
+
     
 def get_don_part(request, partner_id):
     partner = Partners.objects.get(id=partner_id, state='Activo')
