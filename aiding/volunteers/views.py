@@ -203,7 +203,7 @@ class TurnView(views.APIView):
             return Response(data=datos, status=ST_409)
 
 class VolunteerTurnView(views.APIView):
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -225,7 +225,7 @@ class VolunteerTurnView(views.APIView):
                 return Response(data=volunteerTurn, status=ST_200)
             else:
                 datos = {'message': "Volunteer turn not found..."}
-            return Response(data=datos, status=ST_404)
+            return Response(data=datos, status=ST_404)    
         
     
     def post(self,request):  
@@ -235,6 +235,9 @@ class VolunteerTurnView(views.APIView):
         try:
             volunteer= Volunteer.objects.get(id=volunteer_id)
             turn= Turn.objects.get(id=turn_id)
+            volunteerTurns=VolunteerTurn.objects.filter(volunteer=volunteer,turn=turn)
+            if len(volunteerTurns) > 0:
+                raise ValidationError('Este voluntario ya tiene asignado el mismo turno')
             VolunteerTurn.objects.create(volunteer=volunteer,turn=turn)
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
@@ -244,6 +247,9 @@ class VolunteerTurnView(views.APIView):
         except Turn.DoesNotExist:
             datos = {'message': "Turn not found..."}
             return Response(data=datos, status=ST_404)
+        except ValidationError as e:
+            error = {'error': e.message}
+            return Response(data=error, status=ST_409)
         
     def put(self,request,volunteerTurn_id): 
         jd = json.loads(request.body)
@@ -251,8 +257,13 @@ class VolunteerTurnView(views.APIView):
         turn_id= jd['turn_id']
         try:
             volunteerTurn=VolunteerTurn.objects.get(id=volunteerTurn_id)
-            volunteerTurn.volunteer= Volunteer.objects.get(id=volunteer_id)
-            volunteerTurn.turn=Turn.objects.get(id=turn_id)
+            volunteer=Volunteer.objects.get(id=volunteer_id)
+            turn=Turn.objects.get(id=turn_id)
+            volunteerTurns=VolunteerTurn.objects.filter(volunteer=volunteer,turn=turn)
+            if len(volunteerTurns) > 0:
+                raise ValidationError('Este voluntario ya tiene asignado el mismo turno')
+            volunteerTurn.volunteer= volunteer
+            volunteerTurn.turn=turn
             volunteerTurn.save()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
@@ -265,6 +276,9 @@ class VolunteerTurnView(views.APIView):
         except VolunteerTurn.DoesNotExist:
             datos = {'message': "Volunteer Turn not found..."}
             return Response(data=datos, status=ST_409)
+        except ValidationError as e:
+            error = {'error': e.message}
+            return Response(data=error, status=ST_409)
         
     def delete(self, request, volunteerTurn_id):
         try:
@@ -276,3 +290,45 @@ class VolunteerTurnView(views.APIView):
         except VolunteerTurn.DoesNotExist:
             datos = {'message': "Volunteer Turn not found..."}
             return Response(data=datos, status=ST_409)
+        
+class VolunteerTurnByVolunteerView(views.APIView):
+    permission_classes = [IsAdminUser]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request, volunteer_id):
+        try:
+            volunteer= Volunteer.objects.get(id=volunteer_id)
+            volunteerTurn = list(VolunteerTurn.objects.filter(volunteer=volunteer).values())
+            if len(volunteerTurn) > 0:
+                datos = {'volunteerTurn': volunteerTurn}
+                return Response(data=datos, status=ST_200)
+            else:
+                datos = {'message': "Volunteer turn not found..."}
+                return Response(data=datos, status=ST_404)
+        except Volunteer.DoesNotExist:
+            datos = {'message': "Volunteer not found..."}
+            return Response(data=datos, status=ST_404)
+        
+class VolunteerTurnByTurnView(views.APIView):
+    permission_classes = [IsAdminUser]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request, turn_id):
+        try:
+            turn= Turn.objects.get(id=turn_id)
+            volunteerTurn = list(VolunteerTurn.objects.filter(turn=turn).values())
+            if len(volunteerTurn) > 0:
+                datos = {'volunteerTurn': volunteerTurn}
+                return Response(data=datos, status=ST_200)
+            else:
+                datos = {'message': "Volunteer turn not found..."}
+                return Response(data=datos, status=ST_404)
+        except Turn.DoesNotExist:
+            datos = {'message': "Turn not found..."}
+            return Response(data=datos, status=ST_404)
