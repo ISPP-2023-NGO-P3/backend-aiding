@@ -44,15 +44,15 @@ class ItemView(CsrfExemptMixin, views.APIView):
 
     @method_decorator(staff_member_required)
     def post(self, request):
-        jd = json.loads(request.body)        
+        jd = json.loads(request.body)    
         name = jd["name"]
         description = jd["description"]
         quantity = jd["quantity"]
         try:
             type_id = jd["type_id"]
             try:
-                type = Type.objects.get(id=type_id)
-                Item.objects.create(name=name,description= description, quantity= quantity, type=type)
+                t = Type.objects.get(id=type_id)
+                Item.objects.create(name=name,description= description, quantity= quantity, type=t)
                 datos = {"message": "Success"}
                 return Response(data=datos, status=ST_201)
             except Type.DoesNotExist:
@@ -78,15 +78,15 @@ class ItemView(CsrfExemptMixin, views.APIView):
             Item.objects.filter(id=item_id).values()
         )
         if len(items) > 0:
-            type = Type.objects.filter(id=type_id)
-            if len(type) > 0:
-                type = type[0]
+            t= Type.objects.filter(id=type_id)
+            if len(t) > 0:
+                t = t[0]
                 item = Item.objects.get(id=item_id)
                 try:
                     item.name = name
                     item.description = description
                     item.quantity = quantity
-                    item.type = type
+                    item.type = t
                     item.save()
                     datos = {"message": "Success"}
                     return Response(data=datos, status=ST_200)
@@ -119,10 +119,10 @@ class TypeView(CsrfExemptMixin, views.APIView):
 
     def get(self, request, type_id=0):
         if type_id > 0:
-            type = list(Type.objects.filter(id=type_id).values())
-            if len(type) > 0:
-                type = type[0]
-                return Response(data=type, status=ST_200)
+            t = list(Type.objects.filter(id=type_id).values())
+            if len(t) > 0:
+                t = t[0]
+                return Response(data=t, status=ST_200)
             else:
                 datos = {"message": "type not found..."}
                 return Response(data=datos, status=ST_404)
