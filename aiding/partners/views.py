@@ -22,6 +22,7 @@ from datetime import datetime
 from .validators import *
 import csv
 from os import remove
+from rest_framework.permissions import IsAdminUser
 
 def generate_receipt_xml(partner):
     receipt = ET.Element("Recibo")
@@ -61,6 +62,9 @@ def download_receipt_xml(request,partner_id):
         return HttpResponse(status=404)
 
 class PartnerManagement(views.APIView):
+
+    permission_classes = [IsAdminUser]
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -143,10 +147,12 @@ class PartnerManagement(views.APIView):
                 return Response(data=error, status=ST_409)
 
         else:
-            error = {'message': "Partner not found..."}
-            return Response(data=error, status=ST_404)
-    
+            datos = {'message': "Partner not found..."}
+        return Response(data=error, status=ST_409)
+
 class DonationView(View):
+
+    permission_classes = [IsAdminUser]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -174,10 +180,12 @@ class DonationView(View):
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)
 
-        date_str = jd['date']
+        date_str = jd['start_date']
         date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-        Donation.objects.create(partner=partner, date=date,
-                                amount=amount, periodicity=periodicity)
+        year = jd['year']
+        year = datetime.datetime.strptime(year, '%Y').date()
+        Donation.objects.create(partner=partner, start_date=date,
+                                amount=amount, periodicity=periodicity, year=year)
         datos = {'message': "Success"}
         return JsonResponse(datos)
     
@@ -189,14 +197,41 @@ class DonationView(View):
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
         return JsonResponse(datos)
+
+
+    def put(self, request, partner_id):
+        jd = json.loads(request.body)
+        amount = jd['amount']
+        periodicity = jd['periodicity']
+        
+        try:
+            partner = Partners.objects.get(id=partner_id, state='Activo')
+        except Partners.DoesNotExist:
+            datos = {'message': "Partner not found or not active"}
+            return JsonResponse(datos, status=400)
+        
+        try:
+            donation = Donation.objects.filter(partner=partner).latest('start_date')
+        except Donation.DoesNotExist:
+            datos = {'message': "Donation not found..."}
+            return JsonResponse(datos)
+
+        donation.amount = amount
+        donation.periodicity = periodicity
+        donation.save()
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
+
     
 def get_don_part(request, partner_id):
     partner = Partners.objects.get(id=partner_id, state='Activo')
     donation = Donation.objects.filter(partner=partner)
     datos = list(donation.values())[0]
     return JsonResponse(datos, safe=False)
-    
+
 class CommunicationView(View):
+
+    permission_classes = [IsAdminUser]
     
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -264,65 +299,78 @@ class CommunicationView(View):
 
 class ImportCSVView(views.APIView):
 
+    permission_classes = [IsAdminUser]
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
     
     def post(self, request):
-        file=request.FILES["selectedFile"]
+        try:
+            file=request.FILES["selectedFile"]
+        except Exception as e:
+            error = {'error': "Se debe adjuntar un archivo"}
+            return Response(data=error, status=ST_409)
+
         obj=CSVFile.objects.create(file=file)
         path = "media/"+str(obj.file)
         ids_list=[]
-        with open(path) as csvFile:
-            csvReader=csv.DictReader(csvFile,delimiter=";")
-            contador_filas=2
-            for jd in csvReader:
-                try:
-                    validate_dni(jd['dni'])
-                    validate_iban(jd['iban'])
-                    validate_date(jd['cumpleanos'])
-                    validate_name(jd['ï»¿nombre'])
-                    validate_last_name(jd['apellidos'])
-                    validate_dni_blank(jd['dni'])
-                    validate_phone1(jd['telefono'])
-                    validate_birthdate(jd['cumpleanos'])
-                    validate_address(jd['direccion'])
-                    validate_postal_code(jd['codigo_postal'])
-                    validate_township(jd['municipio'])
-                    validate_province(jd['provincia'])
-                    validate_language(jd['idioma'])
-                    validate_iban_blank(jd['iban'])
-                    validate_account_holder(jd['titular_cuenta'])
-                    validate_state(jd['estado'])
-                    validate_sex(jd['sexo'])
-                except ValidationError as e:
-                    csvFile.close()
-                    obj.delete()
-                    remove(path)
-                    for partner_id in ids_list:
-                        partner=Partners.objects.get(id=partner_id)
-                        partner.delete()
-                    error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
-                    return Response(data=error, status=ST_409)
-                try:
-                    new_partner=Partners.objects.create(name=jd['ï»¿nombre'], last_name=jd['apellidos'],
-                    dni=jd['dni'], phone1=jd['telefono'], phone2=jd['telefono_adicional'], birthdate=jd['cumpleanos'], sex=jd['sexo'],
-                    email=jd['email'], address=jd['direccion'], postal_code=jd['codigo_postal'], township=jd['municipio'],
-                    province=jd['provincia'], language=jd['idioma'], iban=jd['iban'],  account_holder=jd['titular_cuenta'],
-                    state=jd['estado'])
-                    ids_list.append(new_partner.id)
+        try:
+            with open(path) as csvFile:
+                csvReader=csv.DictReader(csvFile,delimiter=";")
+                contador_filas=2
+                for jd in csvReader:
+                    try:
+                        validate_dni(jd['dni'])
+                        validate_iban(jd['iban'])
+                        validate_date(jd['cumpleanos'])
+                        validate_name(jd['ï»¿nombre'])
+                        validate_last_name(jd['apellidos'])
+                        validate_dni_blank(jd['dni'])
+                        validate_phone1(jd['telefono'])
+                        validate_birthdate(jd['cumpleanos'])
+                        validate_address(jd['direccion'])
+                        validate_postal_code(jd['codigo_postal'])
+                        validate_township(jd['municipio'])
+                        validate_province(jd['provincia'])
+                        validate_language(jd['idioma'])
+                        validate_iban_blank(jd['iban'])
+                        validate_account_holder(jd['titular_cuenta'])
+                        validate_state(jd['estado'])
+                        validate_sex(jd['sexo'])
+                    except ValidationError as e:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        for partner_id in ids_list:
+                            partner=Partners.objects.get(id=partner_id)
+                            partner.delete()
+                        error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
+                        return Response(data=error, status=ST_409)
+                    try:
+                        new_partner=Partners.objects.create(name=jd['ï»¿nombre'], last_name=jd['apellidos'],
+                        dni=jd['dni'], phone1=jd['telefono'], phone2=jd['telefono_adicional'], birthdate=jd['cumpleanos'], sex=jd['sexo'],
+                        email=jd['email'], address=jd['direccion'], postal_code=jd['codigo_postal'], township=jd['municipio'],
+                        province=jd['provincia'], language=jd['idioma'], iban=jd['iban'],  account_holder=jd['titular_cuenta'],
+                        state=jd['estado'])
+                        ids_list.append(new_partner.id)
 
-                except IntegrityError:
-                    csvFile.close()
-                    obj.delete()
-                    remove(path)
-                    for id in ids_list:
-                        partner=Partners.objects.get(id=id)
-                        partner.delete()
-                    error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
-                    return Response(data=error, status=ST_409)
-                
-                contador_filas=contador_filas+1
+                    except IntegrityError:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        for id in ids_list:
+                            partner=Partners.objects.get(id=id)
+                            partner.delete()
+                        error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
+                        return Response(data=error, status=ST_409)
+                    
+                    contador_filas=contador_filas+1
+        except UnicodeDecodeError as e:
+                obj.delete()
+                remove(path)
+                error = {'error': "El archivo no es válido"}
+                return Response(data=error, status=ST_409)
         csvFile.close()
         obj.delete()
         remove(path)
