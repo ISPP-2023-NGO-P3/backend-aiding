@@ -365,7 +365,11 @@ class ImportCSVView(views.APIView):
                         csvFile.close()
                         obj.delete()
                         remove(path)
-                        for partner_id in ids_list:
+                        for donation_id in donation_id_list:
+                            donation=Donation.objects.get(id=donation_id)
+                            donation.delete()
+
+                        for partner_id in partners_id_list:
                             partner=Partners.objects.get(id=partner_id)
                             partner.delete()
                         error = {'error': "El fichero csv no es correcto"}
