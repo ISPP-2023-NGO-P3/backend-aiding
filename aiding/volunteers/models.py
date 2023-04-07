@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 from .validators import validate_nif
 
 class Volunteer(models.Model):
@@ -44,3 +45,13 @@ class Turn(models.Model):
     date = models.DateField(null=False)
     startTime = models.TimeField(null=False)
     endTime = models.TimeField(null=False)
+
+class VolunteerTurn(models.Model):
+    volunteer= models.ForeignKey(Volunteer, on_delete= models.CASCADE, related_name='volunteer')
+    turn= models.ForeignKey(Turn, on_delete= models.CASCADE, related_name='turn')
+
+    def clean(self):
+        volunteerTurns=VolunteerTurn.objects.filter(volunteer=self.volunteer,turn=self.turn)
+        if len(volunteerTurns) > 0:
+            raise ValidationError('Este voluntario ya tiene asignado el mismo turno')
+    
