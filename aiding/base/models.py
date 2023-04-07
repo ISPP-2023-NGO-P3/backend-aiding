@@ -64,8 +64,7 @@ class GroupBaseManager(GroupManager):
     if 'auth_group' in connection.introspection.table_names():
         group1, created = Group.objects.get_or_create(name='supervisor')
         group2, created = Group.objects.get_or_create(name='capitan')
-        group3, created = Group.objects.get_or_create(name='admin')
-
+        
         permission1 = Permission.objects.get(codename='add_volunteer')
         permission2 = Permission.objects.get(codename='change_volunteer')
         permission3 = Permission.objects.get(codename='delete_volunteer')
@@ -80,8 +79,6 @@ class GroupBaseManager(GroupManager):
             if group.name == 'supervisor':
                 group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
             elif group.name == 'capitan':
-                group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
-            elif group.name == 'admin':
                 group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
 
 class Notification(models.Model):
