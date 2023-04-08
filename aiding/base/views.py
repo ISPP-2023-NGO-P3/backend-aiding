@@ -187,7 +187,7 @@ class NotificationView(views.APIView):
 
     # permission_classes = [IsAdminUser]
 
-    def send_notification(recipients, subject, message):
+    def send_notification(recipients, subject, message, file_path=None):
 
         # Asegúrate de que los datos estén en formato Unicode
         recipients = [smart_str(recipients) for recipients in recipients]
@@ -204,8 +204,11 @@ class NotificationView(views.APIView):
             from_email=unidecode(EMAIL_HOST_USER),
             to=recipients,
         )
-
-        email.attach_alternative(message, "text/html")
+        if file_path:
+            with open(file_path, 'rb') as file:
+                file_data = file.read()
+                file_name = file.name.split("/")[-1]  # Obtener solo el nombre del archivo
+                email.attach(file_name, file_data)
         try:
             email.send(fail_silently=False)
         except Exception as e:
@@ -213,6 +216,12 @@ class NotificationView(views.APIView):
 
     def post(self,request):
         jd = json.loads(request.body)
-        NotificationView.send_notification([jd['recipients']], jd['subject'], jd['message'])
+        file_path = jd.get('file_path')
+        NotificationView.send_notification([jd['recipients']], jd['subject'], jd['message'], file_path=file_path)
+        # file = 'base/foto.jpg'
+        # recipients = ['olivasanchez14@hotmail.com']
+        # NotificationView.send_notification(recipients, 'Hola', 'Se envia el adjunto?', file)
+        # NotificationView.send_notification(recipients, 'Hola', 'Te gusta la foto?', file)
+        # NotificationView.send_notification(recipients, 'Hola', 'Ahora no hay adjunto')
         datos = {'message': "notification sended..."}
         return Response(data=datos, status=ST_201)
