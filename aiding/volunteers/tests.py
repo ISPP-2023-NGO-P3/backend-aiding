@@ -1,6 +1,6 @@
 from django.test import TestCase
 from rest_framework.test import APITestCase
-from .models import Volunteer
+from .models import Volunteer, Turn, VolunteerTurn
 from rest_framework.renderers import JSONRenderer
 
 class VolunteerTests(APITestCase):
@@ -189,3 +189,90 @@ class VolunteerTests(APITestCase):
         self.assertEqual(response.status_code, 404)
         dataMessage = {'error': 'Volunteer not found...'}
         self.assertEqual(response.data, dataMessage)
+
+class TurnTests(APITestCase):
+
+        ################################################## GETS ##################################################
+
+    def test_list_positive_turns_status_OK(self):
+        Turn.objects.create(name="Turno1", description="Turno1 es el turno de mañana", start_time="08:00:00", end_time="14:00:00")
+        Turn.objects.create(name="Turno2", description="Turno2 es el turno de tarde", start_time="14:00:00", end_time="20:00:00")
+        response = self.client.get('volunteers/turns')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+        
+    def test_list_negative_turns_status_NOT_FOUND(self):
+        response = self.client.get('volunteers/turns')
+        data = {"message": "turn not found..."}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data, data)
+        
+    def test_show_positive_turns_status_OK(self):
+        turn=Turn.objects.create(name="Turno1", description="Turno1 es el turno de mañana", start_time="08:00:00", end_time="14:00:00")
+        response = self.client.get(f'/volunteers/turns/{turn.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["name"], "Turno1")
+        
+    def test_show_negative_turns_status_NOT_FOUND(self):
+        response = self.client.get('/volunteers/turns/1')
+        data = {"message": "turn not found..."}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data, data)
+        
+        ################################################## POSTS ##################################################
+        
+    def test_create_positive_turns_CREATED(self):
+        data = JSONRenderer().render({"name":"Turno1", "description":"Turno1 es el turno de mañana", 
+                                      "start_time":"08:00:00", "end_time":"14:00:00"}).decode("utf-8")
+        response = self.client.post('/volunteers/turns', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_create_negative_turns_wrong_date(self):
+        data = JSONRenderer().render({"name":"Turno1", "description":"Turno1 es el turno de mañana", "start_time":"08:00:00", "end_time":"7:00:00"}).decode("utf-8")
+        response = self.client.post('/volunteers/turns', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {'error': 'La hora de inicio debe ser anterior a la hora de fin'}
+        self.assertEqual(response.data, dataMessage)
+        
+        ################################################## PUTS ##################################################
+        
+    def test_update_positive_turns_status_OK(self):
+        turn = Turn.objects.create(name="Turno1", description="Turno1 es el turno de mañana", start_time="08:00:00", end_time="14:00:00")
+        data = JSONRenderer().render({"name":"Turno2", "description":"Turno2 es el turno de mañana", "start_time":"08:00:00", "end_time":"14:00:00"}).decode("utf-8")
+        response = self.client.put(f'/volunteers/turns/{turn.id}', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_update_negative_turns_status_NOT_FOUND(self):
+        data = JSONRenderer().render({"name":"Turno2", "description":"Turno2 es el turno de mañana", "start_time":"08:00:00", "end_time":"14:00:00"}).decode("utf-8")
+        response = self.client.put('/volunteers/turns/1', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'error': 'Turn not found...'}
+        self.assertEqual(response.data, dataMessage)
+        
+    def test_update_negative_turns_wrong_date(self):
+        turn = Turn.objects.create(name="Turno1", description="Turno1 es el turno de mañana", start_time="08:00:00", end_time="14:00:00")
+        data = JSONRenderer().render({"name":"Turno1", "description":"Turno1 es el turno de mañana", "start_time":"08:00:00", "end_time":"7:00:00"}).decode("utf-8")
+        response = self.client.put(f'/volunteers/turns/{turn.id}', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {'error': 'La hora de inicio debe ser anterior a la hora de fin'}
+        self.assertEqual(response.data, dataMessage)
+    
+    ################################################## DELETES ##################################################
+    
+    def test_delete_positive_turns_status_OK(self):
+        turn = Turn.objects.create(name="Turno1", description="Turno1 es el turno de mañana", start_time="08:00:00", end_time="14:00:00")
+        response = self.client.delete(f'/volunteers/turns/{turn.id}')
+        self.assertEqual(response.status_code, 204)
+        dataMessage = {'message': 'Successfully deleted'}
+        self.assertEqual(response.data, dataMessage)
+        
+    def test_delete_negative_turns_status_NOT_FOUND(self):
+        response = self.client.delete('/volunteers/turns/1')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'error': 'Turn not found...'}
+        self.assertEqual(response.data, dataMessage)
+            
