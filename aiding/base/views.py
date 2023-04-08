@@ -25,6 +25,7 @@ from aiding.settings import EMAIL_HOST_USER
 from django.utils.encoding import smart_str
 from unidecode import unidecode
 from .models import Contact, User
+from rest_framework.permissions import IsAdminUser
 
 class LoginView(views.APIView):
     @method_decorator(csrf_exempt)
@@ -182,27 +183,36 @@ class ContactView(views.APIView):
             datos = {'message': "Update not found..."}
             return Response(data=datos, status=ST_404)
         
+class NotificationView(views.APIView):
 
-def send_notification(recipients, subject, message):
+    # permission_classes = [IsAdminUser]
 
-    # Asegúrate de que los datos estén en formato Unicode
-    recipients = [smart_str(recipients) for recipients in recipients]
-    subject = smart_str(subject)
-    message = smart_str(message)
+    def send_notification(recipients, subject, message):
 
-    recipients = [unidecode(recipients) for recipients in recipients]
-    subject = unidecode(subject)
-    message = unidecode(message)
+        # Asegúrate de que los datos estén en formato Unicode
+        recipients = [smart_str(recipients) for recipients in recipients]
+        subject = smart_str(subject)
+        message = smart_str(message)
 
-    email = EmailMultiAlternatives(
-        subject=subject,
-        body=message,
-        from_email=unidecode(EMAIL_HOST_USER),
-        to=recipients,
-    )
+        recipients = [unidecode(recipients) for recipients in recipients]
+        subject = unidecode(subject)
+        message = unidecode(message)
 
-    email.attach_alternative(message, "text/html")
-    try:
-        email.send(fail_silently=False)
-    except Exception as e:
-        print(f"Error al enviar el correo electrónico: {e}")
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=message,
+            from_email=unidecode(EMAIL_HOST_USER),
+            to=recipients,
+        )
+
+        email.attach_alternative(message, "text/html")
+        try:
+            email.send(fail_silently=False)
+        except Exception as e:
+            print(f"Error al enviar el correo electrónico: {e}")
+
+    def post(self,request):
+        jd = json.loads(request.body)
+        NotificationView.send_notification([jd['recipients']], jd['subject'], jd['message'])
+        datos = {'message': "notification sended..."}
+        return Response(data=datos, status=ST_201)
