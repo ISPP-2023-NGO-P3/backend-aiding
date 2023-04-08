@@ -85,7 +85,7 @@ def validate_state(state):
 
 def validate_periodicity(periodicity):
     if len(periodicity)<1 or not (periodicity=="Mensual" or periodicity=="Anual" or periodicity=="Trimestral" or periodicity=="Semestral"):
-        raise ValidationError('El estado debe ser "Mensual", "Anual", "Semestral" o "Trimestral"')
+        raise ValidationError('La periodicidad debe ser "Mensual", "Anual", "Semestral" o "Trimestral"')
     
 def validate_amount(amount):
     try:

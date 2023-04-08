@@ -325,31 +325,38 @@ class ImportCSVView(views.APIView):
                 csvReader=csv.DictReader(csvFile,delimiter=";")
                 contador_filas=2
                 for jd in csvReader:
-                    if jd['Idioma']=='Español':
-                        jd['Idioma']='spanish'
-                    
-                    if jd['Idioma']=='Catalán':
-                        jd['Idioma']='catalan'
+                    try:
+                        if jd['Idioma']=='Español':
+                            jd['Idioma']='spanish'
+                        
+                        if jd['Idioma']=='Catalán':
+                            jd['Idioma']='catalan'
 
-                    if jd['Sexo']=='Hombre':
-                        jd['Sexo']='men'
+                        if jd['Sexo']=='Hombre':
+                            jd['Sexo']='men'
 
-                    if jd['Sexo']=='Mujer':
-                        jd['Sexo']='women'
+                        if jd['Sexo']=='Mujer':
+                            jd['Sexo']='women'
 
-                    if jd['Sexo']=='Ninguno':
-                        jd['Sexo']='none'
+                        if jd['Sexo']=='Ninguno':
+                            jd['Sexo']='none'
 
-                    if jd['Situación (Alta/Baja)']=='Alta':
-                        jd['Situación (Alta/Baja)']='Activo'
+                        if jd['Situación (Alta/Baja)']=='Alta':
+                            jd['Situación (Alta/Baja)']='Activo'
 
-                    if jd['Situación (Alta/Baja)']=='Baja':
-                        jd['Situación (Alta/Baja)']='Inactivo'
-                    
-                    if "/" in jd['Fch Nac.']:
-                        fecha=jd['Fch Nac.'].split("/")
-                        jd['Fch Nac.']=fecha[2]+'-'+fecha[1]+'-'+fecha[0]
+                        if jd['Situación (Alta/Baja)']=='Baja':
+                            jd['Situación (Alta/Baja)']='Inactivo'
+                        
+                        if "/" in jd['Fch Nac.']:
+                            fecha=jd['Fch Nac.'].split("/")
+                            jd['Fch Nac.']=fecha[2]+'-'+fecha[1]+'-'+fecha[0]
 
+                    except KeyError as e:
+                        csvFile.close()
+                        obj.delete()
+                        remove(path)
+                        error = {'error': "El fichero csv no es correcto"}
+                        return Response(data=error, status=ST_409)
                     try:
                         partner=Partners.objects.filter(id=jd['Nº Soc'])
                         if len(partner)>0:
@@ -385,6 +392,7 @@ class ImportCSVView(views.APIView):
                         for partner_id in partners_id_list:
                             partner=Partners.objects.get(id=partner_id)
                             partner.delete()
+
                         error = {'error': e.message + ", este error se ha dado en la fila " + str(contador_filas) + " del fichero csv."}
                         return Response(data=error, status=ST_409)
                     
@@ -410,7 +418,7 @@ class ImportCSVView(views.APIView):
                         state=jd['Situación (Alta/Baja)'])
                         partners_id_list.append(new_partner.id)
 
-                        new_donation=Donation.objects.create(partner=new_partner,date=date.today(),amount=jd[' Importe '],periodicity=jd['Periodicidad'])
+                        new_donation=Donation.objects.create(partner=new_partner,start_date=date.today(),amount=jd[' Importe '],periodicity=jd['Periodicidad'])
                         donation_id_list.append(new_donation.id)
 
 
