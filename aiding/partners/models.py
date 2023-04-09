@@ -64,8 +64,9 @@ class Donation(models.Model):
         unique_together = ('partner', 'year')
 
 
-    def total_donation(self, end_date):
-        end_date = date(end_date.year, end_date.month, 10)
+    def total_donation(self):
+
+        end_date = date(self.start_date.year, 12, 10)
 
         if self.periodicity == DonationPeriodicity.ANNUAL.value['name']:
             return self.amount
