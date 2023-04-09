@@ -12,13 +12,13 @@ from rest_framework.status import HTTP_201_CREATED as ST_201
 from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, DjangoModelPermissions
 from .validators import validate_nif, validate_datetime
 
 
 class VolunteerManagement(views.APIView):
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser | DjangoModelPermissions]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -111,7 +111,7 @@ class VolunteerManagement(views.APIView):
 
 class TurnView(views.APIView):
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser | DjangoModelPermissions]
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):

@@ -73,12 +73,27 @@ def validate_account_holder(account_holder):
 
 def validate_sex(sex):
     if len(sex)<1 or not (sex=="men" or sex=="women" or sex=="none"):
-        raise ValidationError('El sexo debe ser "men", "women" o "none"')
+        raise ValidationError('El sexo debe ser "Hombre", "Mujer" o "Ninguno"')
 
 def validate_language(language):
     if len(language)<1 or not (language == "spanish" or language=="catalan"):
-        raise ValidationError('El idioma debe ser "spanish" o "catalan"')
+        raise ValidationError('El idioma debe ser "Español" o "Catalán"')
 
 def validate_state(state):
     if len(state)<1 or not (state=="Activo" or state=="Inactivo"):
-        raise ValidationError('El estado debe ser "Activo" o "Inactivo"')
+        raise ValidationError('El estado debe ser "Alta" o "Baja"')
+
+def validate_periodicity(periodicity):
+    if len(periodicity)<1 or not (periodicity=="Mensual" or periodicity=="Anual" or periodicity=="Trimestral" or periodicity=="Semestral"):
+        raise ValidationError('La periodicidad debe ser "Mensual", "Anual", "Semestral" o "Trimestral"')
+    
+def validate_amount(amount):
+    try:
+        float(amount)
+        es_valido=True
+    except ValueError:
+        es_valido=False
+    
+    if not es_valido and not amount.isdecimal():
+        raise ValidationError('El importe debe ser un numero')
+
