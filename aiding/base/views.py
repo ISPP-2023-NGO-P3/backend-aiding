@@ -14,11 +14,13 @@ from rest_framework.status import (
     HTTP_204_NO_CONTENT as ST_204,
     HTTP_400_BAD_REQUEST as ST_400,
     HTTP_205_RESET_CONTENT as ST_205,
+    HTTP_401_UNAUTHORIZED as ST_401,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from .models import Contact, User
 from django.contrib.auth.models import Group
+from django.contrib.auth import authenticate, login
 
 class RoleView(views.APIView):
     @method_decorator(csrf_exempt)
@@ -52,6 +54,26 @@ class RolesView(views.APIView):
         else:
             datos = {"message": "groups not found..."}
             return Response(data=datos, status=ST_404)
+        
+class LoginView(views.APIView):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, args, **kwargs):
+        return super().dispatch(request,args, **kwargs)
+
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        if request.user.is_authenticated:
+            data = {'message' : 'You are already logged in'}
+            return Response(data, status=ST_401)
+        jd = json.loads(request.body)
+        user = authenticate(username = jd['username'], password = jd['password'])
+        if user is not None:
+            login(request, user)
+            data = {'message' : 'Login successful!'}
+            return Response(data, status=ST_200)
+        else:
+            data = {'message' : 'Login unsuccessful'}
+            return Response(data, status=ST_401)
 
 class LogoutView(views.APIView):
     @method_decorator(login_required)
