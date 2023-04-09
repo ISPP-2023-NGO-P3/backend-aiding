@@ -175,7 +175,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                     "section_id",
                     "front_page",
                     "creation_date",
-                )
+                ).order_by('-creation_date')
             )
             if len(advertisement) > 0:
                 advertisement = advertisement[0]
@@ -201,7 +201,7 @@ class AdvertisementView(CsrfExemptMixin, views.APIView):
                             "section_id__name",
                             "front_page",
                             "creation_date",
-                        )
+                        ).order_by('-creation_date')
                         for adv in advertisements_with_section_id:
                             advertisements.append(adv)
                     return Response(data=advertisements, status=ST_200)
@@ -313,7 +313,7 @@ class AdvertisementSectionView(CsrfExemptMixin, views.APIView):
                         "section_id__name",
                         "front_page",
                         "creation_date",
-                    )
+                    ).order_by('-creation_date')
                 )
                 return Response(data=advertisements_with_section_id, status=ST_200)
             except Exception:

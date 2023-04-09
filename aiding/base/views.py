@@ -1,7 +1,6 @@
 import json
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import views
@@ -9,22 +8,57 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
-    HTTP_401_UNAUTHORIZED as ST_401,
     HTTP_403_FORBIDDEN as ST_403,
     HTTP_404_NOT_FOUND as ST_404,
-    HTTP_409_CONFLICT as ST_409,    
+    HTTP_409_CONFLICT as ST_409,
     HTTP_204_NO_CONTENT as ST_204,
     HTTP_400_BAD_REQUEST as ST_400,
     HTTP_205_RESET_CONTENT as ST_205,
+    HTTP_401_UNAUTHORIZED as ST_401,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from .models import Contact, User
+from django.contrib.auth.models import Group
+from django.contrib.auth import authenticate, login
 
-class LoginView(views.APIView):
+class RoleView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
+
+    @method_decorator(login_required)
+    def get(self, request):
+        user = request.user
+        role = None
+        if user.is_admin:
+            role = 'admin'
+        elif user.roles != None:
+            role = str(request.user.roles)
+        else:
+            role = 'user'
+
+        data = {'role': role}
+        return Response(data=data, status=ST_200)
+
+class RolesView(views.APIView):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, section_id=0):
+        groups = list(Group.objects.all().values())
+        lenght = len(groups)
+        if lenght > 0:
+            return Response(data=groups, status=ST_200)
+        else:
+            datos = {"message": "groups not found..."}
+            return Response(data=datos, status=ST_404)
+        
+class LoginView(views.APIView):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, args, **kwargs):
+        return super().dispatch(request,args, **kwargs)
 
     @method_decorator(csrf_exempt)
     def post(self, request):
@@ -44,22 +78,22 @@ class LoginView(views.APIView):
 class LogoutView(views.APIView):
     @method_decorator(login_required)
     def post(self, request):
-          try:
-               refresh_token = request.data["refresh_token"]
-               token = RefreshToken(refresh_token)
-               token.blacklist()
-               return Response(status=ST_205)
-          except Exception as e:
-               print(e)
-               return Response(status=ST_400)
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=ST_205)
+        except Exception as e:
+            print(e)
+            return Response(status=ST_400)
 
 class UserView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
-    
+
     @method_decorator(login_required)
-    def get(self, request, user_id = 0):
+    def get(self, request, user_id=0):
         if (user_id > 0):
             users = list(User.objects.filter(id=user_id).values())
             if len(users) > 0:
@@ -81,28 +115,30 @@ class UserView(views.APIView):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
         auth_user = request.user
-        if auth_user.is_authenticated and auth_user.is_admin:            
-            User.objects.create(username=jd['username'],password=make_password(jd['password']),is_admin=jd['is_admin'])
+        if auth_user.is_authenticated and auth_user.is_admin:
+            role = Group.objects.get(name=jd['roles_id'])
+            User.objects.create(username=jd['username'], password=make_password(
+                jd['password']), is_admin=jd['is_admin'], roles=role)
             data = {'message': "Success"}
             return Response(data=data, status=ST_201)
         else:
             data = {'message': "You do not have permissions."}
             return Response(data=data, status=ST_403)
-    
+
     @method_decorator(login_required)
     def put(self, request, user_id):
         jd = json.dumps(request.data)
         jd = json.loads(jd)
         users = list(User.objects.filter(id=user_id).values())
-
         auth_user = request.user
-
         if auth_user.is_authenticated and auth_user.is_admin:
             if len(users) > 0:
+                role = Group.objects.get(id=jd['roles_id'])
                 user = User.objects.get(id=user_id)
                 user.username = jd['username']
                 user.password = make_password(jd['password'])
                 user.is_admin = jd['is_admin']
+                user.roles = role
                 user.save()
                 data = {'message': "Success"}
                 return Response(data=data, status=ST_200)
@@ -113,7 +149,6 @@ class UserView(views.APIView):
         else:
             data = {'message': "You do not have permissions."}
             return Response(data=data, status=ST_403)
-        
 
 class ContactView(views.APIView):
     @method_decorator(csrf_exempt)
@@ -137,8 +172,8 @@ class ContactView(views.APIView):
             else:
                 datos = {'message': "contacts not found..."}
             return Response(data=datos, status=ST_404)
-            
-    def post(self,request):
+
+    def post(self, request):
         jd = json.loads(request.body)
         Contact.objects.create(
             name=jd['name'],
@@ -149,7 +184,7 @@ class ContactView(views.APIView):
         )
         datos = {'message': "contact created..."}
         return Response(data=datos, status=ST_201)
-       
+
     def delete(self, request, contact_id):
         contacts = list(Contact.objects.filter(id=contact_id).values())
         if len(contacts) > 0:
@@ -159,7 +194,7 @@ class ContactView(views.APIView):
         else:
             datos = {'message': "Delete not found..."}
             return Response(data=datos, status=ST_404)
-        
+
     def put(self, request, contact_id):
         jd = json.loads(request.body)
         contacts = list(Contact.objects.filter(id=contact_id).values())
