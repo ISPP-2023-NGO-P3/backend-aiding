@@ -1,6 +1,7 @@
 from datetime import date
 from enum import Enum
 from django.db import models
+from django.forms import ValidationError
 from .validators import validate_date, validate_dni, validate_iban
 
 class Partners(models.Model):
@@ -47,20 +48,41 @@ class DonationPeriodicity(Enum):
         return self.value['days']
 
 class Donation(models.Model):
-    partner = models.OneToOneField(Partners, on_delete = models.CASCADE, related_name='donation')
-    date = models.DateField()
+    partner = models.ForeignKey(Partners, on_delete= models.CASCADE, related_name='donation')
+    start_date = models.DateField(auto_now_add=True)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     periodicity = models.CharField(choices=[(p.value['name'], p.name) for p in DonationPeriodicity], max_length=20)
+    year = models.IntegerField(default=date.today().year, editable=False)
+
+    
+    def clean(self):
+        existing_donation = Donation.objects.filter(partner=self.partner, year=self.year).first()
+        if existing_donation and existing_donation.id != self.id:
+            raise ValidationError('Ya existe una donación para este socio y año.')
+    
+    class Meta:
+        unique_together = ('partner', 'year')
+
 
     def total_donation(self):
 
-        f_date = date.replace(day=31, month=12,  year=self.date.year)
-        numero_dias = (f_date-self.date).days()
+        end_date = date(self.start_date.year, 12, 10)
 
-        numero_periodos = int(numero_dias/DonationPeriodicity[self.periodicity].get_periodicity_days())
+        if self.periodicity == DonationPeriodicity.ANNUAL.value['name']:
+            return self.amount
+       
+        start_date = self.start_date
+        if start_date.day > 14:
+            start_date = date(start_date.year, start_date.month + 1, 10)
+        else:
+            start_date = date(start_date.year, start_date.month, 10)
 
-        return numero_periodos*self.amount
+        num_days = (end_date - start_date).days
+        num_periods = num_days // self.periodicity.get_periodicity_days()
 
+        return self.amount * num_periods
+    
+        
 class Communication(models.Model):
     COMMUNICATION_TYPE = (
             ('TELEFÓNICA', 'TELEPHONIC'),
@@ -76,3 +98,6 @@ class Communication(models.Model):
 
 class CSVFile(models.Model):
     file = models.FileField(upload_to="import_partners")
+
+
+    

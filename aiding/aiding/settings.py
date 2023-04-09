@@ -37,6 +37,7 @@ MODULES = [
     'partners',
     'volunteers',
     'events',
+    'stock',
 ]
 
 INSTALLED_APPS = [

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Partners, Donation, Communication
+from .models import Partners, Donation, Communication, CSVFile
 
 class PartnersAdmin(admin.ModelAdmin):
     list_display = ('name', 'last_name', 'dni', 'phone1', 'phone2', 'birthdate', 'sex', 'email', 'address', 'postal_code', 'township', 'province', 'language', 'iban', 'account_holder', 'state')
@@ -9,9 +9,9 @@ class PartnersAdmin(admin.ModelAdmin):
 admin.site.register(Partners, PartnersAdmin)
 
 class DonationAdmin(admin.ModelAdmin):
-    list_display = ('partner', 'date', 'amount','periodicity')
-    list_filter = ('partner', )
-    search_fields = ('partner', )
+    list_display = ('partner', 'start_date', 'amount','periodicity')
+    list_filter = ('partner','year' )
+    search_fields = ('partner', 'year' )
 
 admin.site.register(Donation, DonationAdmin)
 
