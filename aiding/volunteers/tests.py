@@ -207,8 +207,8 @@ class TurnTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="rosa", 
-            password="rosa"
+            username="ispp", 
+            password="ispp"
         )
         self.client.force_authenticate(user=self.user)
 
