@@ -1,9 +1,8 @@
 from django.contrib import admin
 
-from .models import Contact, User, Notification
+from .models import Contact, User
 
 admin.site.register(User)
-admin.site.register(Notification)
 
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone', 'datetime', 'subject', 'message', 'isAnswered')
