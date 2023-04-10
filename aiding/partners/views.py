@@ -57,7 +57,6 @@ def download_receipt_xml(request,partner_id):
     try:
         partner=Partners.objects.get(id=partner_id)
         donation = Donation.objects.filter(partner=partner).first()
-        
         response = HttpResponse(generate_receipt_xml(partner,donation),content_type="application/xml")
         todayDate=datetime.datetime.today().strftime('%Y-%m-%d')
         response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + '_'+todayDate  +'_RECIBO.xml'
