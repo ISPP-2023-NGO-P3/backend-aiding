@@ -4,6 +4,8 @@ from django.db import models
 from django.forms import ValidationError
 from .validators import validate_date, validate_dni, validate_iban
 
+dict_dates= {'MENSUAL':30,'TRIMESTRAL':90,'SEMESTRAL':180,'ANUAL':365}
+
 class Partners(models.Model):
     STATE_CHOICES = (
         ('Activo','Activo'),
@@ -63,24 +65,20 @@ class Donation(models.Model):
     class Meta:
         unique_together = ('partner', 'year')
 
-
     def total_donation(self):
-
+        amount=self.amount
         end_date = date(self.start_date.year, 12, 10)
-
         if self.periodicity == DonationPeriodicity.ANNUAL.value['name']:
-            return self.amount
-       
+            return amount
         start_date = self.start_date
         if start_date.day > 14:
             start_date = date(start_date.year, start_date.month + 1, 10)
         else:
             start_date = date(start_date.year, start_date.month, 10)
-
         num_days = (end_date - start_date).days
-        num_periods = num_days // self.periodicity.get_periodicity_days()
-
-        return self.amount * num_periods
+        periodicity= dict_dates[self.periodicity]
+        num_periods = num_days // periodicity
+        return amount * num_periods
     
         
 class Communication(models.Model):
