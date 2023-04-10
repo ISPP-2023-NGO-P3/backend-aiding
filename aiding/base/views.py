@@ -27,6 +27,8 @@ from .models import Contact, User
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate, login
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
 
 class RoleView(views.APIView):
     @method_decorator(csrf_exempt)
@@ -222,7 +224,7 @@ class NotificationView(views.APIView):
 
     # permission_classes = [IsAdminUser]
 
-    def send_notification(recipients, subject, message, file_path=None):
+    def send_notification(recipients, subject, message, attached_file=None):
 
         # Asegúrate de que los datos estén en formato Unicode
         recipients = [smart_str(recipients) for recipients in recipients]
@@ -239,23 +241,22 @@ class NotificationView(views.APIView):
             from_email=unidecode(EMAIL_HOST_USER),
             to=recipients,
         )
-
-        if file_path:
-            with open(file_path, 'rb') as file:
-                file_data = file.read()
-                file_name = file.name.split("/")[-1]  # Obtener solo el nombre del archivo
-                email.attach(file_name, file_data)
-
+        print(unidecode(EMAIL_HOST_USER))
+        print(recipients)
+        if attached_file:
+            file_name = slugify(attached_file.name)
+            file_content = ContentFile(attached_file.read().decode('latin-1'))
+            email.attach(file_name, file_content.read(), attached_file.content_type)
         try:
             email.send(fail_silently=False)
         except Exception as e:
             print(f"Error al enviar el correo electrónico: {e}")
 
     def post(self,request):
-        jd = json.loads(request.body)
-        file_path = jd.get('file_path')
-        NotificationView.send_notification([jd['recipients']], jd['subject'], jd['message'], file_path=file_path)
-        # path = 'base/foto.jpg'
-        # NotificationView.send_notification(['olivasanchez14@hotmail.com'], 'Hola', 'La he liado', path)
+        recipients = request.POST.get('recipients').split(' ')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        _file = request.FILES.get('file')
+        NotificationView.send_notification(recipients, subject, message, _file)
         datos = {'message': "notification sended..."}
         return Response(data=datos, status=ST_201)
