@@ -87,6 +87,32 @@ class LogoutView(views.APIView):
             print(e)
             return Response(status=ST_400)
 
+class RegisterView(views.APIView):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request):
+        jd = json.loads(request.body)
+        username = jd['username']
+        password = jd['password']
+        password2 = jd['password2']
+
+        if password != password2:
+            data = {'message': 'Passwords do not match'}
+            return Response(data=data, status=ST_409)
+        
+        try:
+            user = User.objects.create(username=username, password=make_password(password), is_admin=False)
+            user.save()
+
+            userAuth = authenticate(username=username, password=password)
+            login(request, userAuth)
+            return Response(status=ST_201)
+        except IntegrityError:
+            data = {'message': 'Username already exists'}
+            return Response(data=data, status=ST_409)
+
 class UserView(views.APIView):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
