@@ -183,12 +183,8 @@ class DonationView(View):
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)
 
-        date_str = jd['start_date']
-        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-        year = jd['year']
-        year = datetime.datetime.strptime(year, '%Y').date()
-        Donation.objects.create(partner=partner, start_date=date,
-                                amount=amount, periodicity=periodicity, year=year)
+        Donation.objects.create(partner=partner,
+                                amount=amount, periodicity=periodicity)
         datos = {'message': "Success"}
         return JsonResponse(datos)
     
