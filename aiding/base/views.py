@@ -132,6 +132,7 @@ class UserView(views.APIView):
             users = list(User.objects.filter(id=user_id).values())
             if len(users) > 0:
                 user = users[0]
+                print(user['password'])
                 return Response(data=user, status=ST_200)
             else:
                 data = {'message': "user not found..."}
@@ -150,11 +151,27 @@ class UserView(views.APIView):
         jd = json.loads(jd)
         auth_user = request.user
         if auth_user.is_authenticated and auth_user.is_admin:
-            role = Group.objects.get(name=jd['roles_id'])
-            User.objects.create(username=jd['username'], password=make_password(
-                jd['password']), is_admin=jd['is_admin'], roles=role)
-            data = {'message': "Success"}
-            return Response(data=data, status=ST_201)
+            roles_id = request.POST.get('roles_id')
+            error = {"error": "Role ID not provided"}
+            print(roles_id)
+                # return Response(data=error, status=ST_400)
+            try:
+                if(roles_id== '' or roles_id== None):
+                    User.objects.create(username=request.POST.get('username'), password=make_password(
+                    request.POST.get('password')), is_admin=jd.get('is_admin', False))
+                    data = {'message': "Success"}
+                    return Response(data=data, status=ST_201)
+                else:
+                    role = Group.objects.get(name=jd['roles_id'])
+                    User.objects.create(username=request.POST.get('username'), password=make_password(
+                    request.POST.get('password')), is_admin=jd.get('is_admin', False), roles=role)
+                    data = {'message': "Success"}
+                    return Response(data=data, status=ST_201)
+            except Group.DoesNotExist:
+                error = {
+                "error": "Type not found"
+            }
+            return Response(data=error, status=ST_404)
         else:
             data = {'message': "You do not have permissions."}
             return Response(data=data, status=ST_403)
@@ -166,16 +183,38 @@ class UserView(views.APIView):
         users = list(User.objects.filter(id=user_id).values())
         auth_user = request.user
         if auth_user.is_authenticated and auth_user.is_admin:
+            roles_id = jd['roles_id']
+            error = {"error": "Role ID not provided"}
             if len(users) > 0:
-                role = Group.objects.get(id=jd['roles_id'])
-                user = User.objects.get(id=user_id)
-                user.username = jd['username']
-                user.password = make_password(jd['password'])
-                user.is_admin = jd['is_admin']
-                user.roles = role
-                user.save()
-                data = {'message': "Success"}
-                return Response(data=data, status=ST_200)
+                try:
+                    if(roles_id== '' or roles_id== None):
+                        print('if:',roles_id)
+                        user = User.objects.get(id=user_id)
+                        user.username = jd['username']
+                        new_password = request.data.get('password')
+                        user.password = make_password(new_password)
+                        user.is_admin = jd['is_admin']
+                        user.roles = None
+                        user.save()
+                        data = {'message': "Success"}
+                        return Response(data=data, status=ST_200)
+                    else:
+                        print('else:',roles_id)
+                        role = Group.objects.get(id=jd['roles_id'])
+                        user = User.objects.get(id=user_id)
+                        user.username = jd['username']
+                        new_password = request.data.get('password')
+                        user.password = make_password(new_password)
+                        user.is_admin = jd['is_admin']
+                        user.roles = role
+                        user.save()
+                        data = {'message': "Success"}
+                        return Response(data=data, status=ST_201)
+                except Group.DoesNotExist:
+                    error = {
+                    "error": "Type not found"
+                }
+                return Response(data=error, status=ST_404)    
             else:
                 data = {'message': "User not found..."}
                 return Response(data=data, status=ST_404)
