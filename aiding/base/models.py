@@ -80,8 +80,3 @@ class GroupBaseManager(GroupManager):
                 group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
             elif group.name == 'capitan':
                 group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
-
-class Notification(models.Model):
-    subject = models.CharField(blank=False, null=False, max_length=100)
-    message = models.TextField(blank=False, null=False)
-    targets = models.ManyToManyField(User)
