@@ -26,7 +26,7 @@ from os import remove
 from rest_framework.permissions import IsAdminUser
 from django.contrib.admin.views.decorators import staff_member_required
 
-def generate_receipt_xml(partner):
+def generate_receipt_xml(partner,donation):
     receipt = ET.Element("Recibo")
     donator = ET.Element("donante")
     receipt.append(donator)
@@ -47,7 +47,7 @@ def generate_receipt_xml(partner):
     receipt.append(concept)
 
     amount = ET.Element("importe")
-    amount.text = "placeholder" #str(donation.total_donation()) +"€"
+    amount.text = str(donation.total_donation()) +"€"
     receipt.append(amount)
 
     xml_str=ET.tostring(receipt,'utf-8',short_empty_elements=False)
@@ -56,7 +56,8 @@ def generate_receipt_xml(partner):
 def download_receipt_xml(request,partner_id):
     try:
         partner=Partners.objects.get(id=partner_id)
-        response = HttpResponse(generate_receipt_xml(partner),content_type="application/xml")
+        donation = Donation.objects.filter(partner=partner).first()
+        response = HttpResponse(generate_receipt_xml(partner,donation),content_type="application/xml")
         todayDate=datetime.datetime.today().strftime('%Y-%m-%d')
         response['Content-Disposition'] = 'attachment; filename ='+ partner.name.replace(" ","") + partner.last_name.replace(" ","") + '_'+todayDate  +'_RECIBO.xml'
         return response
@@ -182,12 +183,8 @@ class DonationView(View):
             datos = {'message': "Partner not found or not active"}
             return JsonResponse(datos, status=400)
 
-        date_str = jd['start_date']
-        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-        year = jd['year']
-        year = datetime.datetime.strptime(year, '%Y').date()
-        Donation.objects.create(partner=partner, start_date=date,
-                                amount=amount, periodicity=periodicity, year=year)
+        Donation.objects.create(partner=partner,
+                                amount=amount, periodicity=periodicity)
         datos = {'message': "Success"}
         return JsonResponse(datos)
     
