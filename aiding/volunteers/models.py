@@ -1,6 +1,7 @@
 from django.db import models
 from django.forms import ValidationError
 from .validators import validate_nif
+from base.models import User
 
 class Volunteer(models.Model):
     SITUATION_CHOICES = (
@@ -42,9 +43,12 @@ class Volunteer(models.Model):
     otherKnowledge= models.CharField(max_length=250,blank=True)
 
 class Turn(models.Model):
+    title = models.CharField(max_length=100, blank=False, unique=True)
     date = models.DateField(null=False)
     startTime = models.TimeField(null=False)
     endTime = models.TimeField(null=False)
+    draft = models.BooleanField(default=False)
+    supervisor = models.ForeignKey(User, on_delete= models.CASCADE, related_name='supervisor')
 
 class VolunteerTurn(models.Model):
     volunteer= models.ForeignKey(Volunteer, on_delete= models.CASCADE, related_name='volunteer')

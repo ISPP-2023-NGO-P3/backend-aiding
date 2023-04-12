@@ -127,7 +127,7 @@ class TurnView(views.APIView):
                 datos = {'message': "turn not found..."}
             return Response(data=datos, status=ST_404)
         else:
-            turn = list(Turn.objects.values())
+            turn = list(Turn.objects.filter(supervisor=request.user.id).values())
             if len(turn) > 0:
                 datos = {'turn': turn}
                 return Response(data=turn, status=ST_200)
@@ -139,6 +139,7 @@ class TurnView(views.APIView):
          
         jd = json.loads(request.body)
         
+        title = jd['title']
         date_str= jd['date']
         date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
         startTime_str= jd['startTime']
@@ -148,7 +149,7 @@ class TurnView(views.APIView):
 
         try:
             validate_datetime(date,startTime,endTime)
-            Turn.objects.create(date=date,startTime=startTime,endTime=endTime)
+            Turn.objects.create(title=title,date=date,startTime=startTime,endTime=endTime,draft=False,supervisor=request.user)
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
         except ValidationError as e:
@@ -156,6 +157,9 @@ class TurnView(views.APIView):
             return Response(data=error, status=ST_409)
         
     def put(self, request, turn_id):
+        if(turn.draft):
+            datos = {'message' : "Turn is not in draft mode..."}
+            return Response(data=datos, status=ST_409)
 
         try:
             turn = Turn.objects.get(id=turn_id)
@@ -164,6 +168,10 @@ class TurnView(views.APIView):
             return Response(data=datos, status=ST_409)
         
         jd = json.loads(request.body)
+        title = jd.get('title', None)
+        if title:
+            turn.title = title
+
         date_str = jd.get('date', None)
         if date_str:
             date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -192,6 +200,10 @@ class TurnView(views.APIView):
 
 
     def delete(self, request, turn_id):
+        if(turn.draft):
+            datos = {'message' : "Turn is not in draft mode..."}
+            return Response(data=datos, status=ST_409)
+        
         try:
             turn = Turn.objects.get(id=turn_id)
             turn.delete()
@@ -201,6 +213,24 @@ class TurnView(views.APIView):
         except Turn.DoesNotExist:
             datos = {'message': "Turn not found..."}
             return Response(data=datos, status=ST_409)
+
+class TurnDraftView(views.APIView):
+    def put(self, request, turn_id):
+
+        try:
+            turn = Turn.objects.get(id=turn_id)
+        except Turn.DoesNotExist:
+            datos = {'message': "Turn not found..."}
+            return Response(data=datos, status=ST_409)
+        
+        try:
+            turn.draft = True
+            turn.save()
+            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_200)
+        except ValidationError as e:
+            error = {'error': e.message}
+            return Response(data=error, status=ST_409)
 
 class VolunteerTurnView(views.APIView):
     permission_classes = [IsAdminUser]
