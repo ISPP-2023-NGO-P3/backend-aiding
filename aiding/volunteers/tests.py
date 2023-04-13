@@ -296,3 +296,211 @@ class TurnTests(APITestCase):
         self.assertEqual(response.status_code, 409)
         dataMessage = {'message': 'Turn not found...'}
         self.assertEqual(response.data, dataMessage) 
+
+class VolunteerTurnTests(APITestCase):
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
+        
+        ################################################## GETS ##################################################
+        
+    def test_list_positive_volunteer_turns_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        response = self.client.get('/volunteers/volunteerTurns/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(json.loads(response.content)), 1)
+        
+    def test_list_negative_volunteer_turns_status_NOT_FOUND(self):
+        response = self.client.get('/volunteers/volunteerTurns/')
+        data = {"message": "Volunteer turn not found..."}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json.loads(response.content), data)
+    
+    def test_show_positive_volunteer_turns_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        vt = VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        response = self.client.get(f'/volunteers/volunteerTurns/{vt.id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["volunteer_id"], volunteer.id)
+        
+    def test_show_negative_volunteer_turns_status_NOT_FOUND(self):
+        response = self.client.get('/volunteers/volunteerTurns/1/')
+        data = {"message": "Volunteer turn not found..."}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json.loads(response.content), data)
+    
+    def test_show_positive_volunteers_in_turn_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        volunteer2 = Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="999999998", nif="54181998R", place="Sevilla", 
+                    phone="888888879" ,email="persona2@gmail.com", state="Activo", situation = "necesitaFormacion",
+                rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        VolunteerTurn.objects.create(volunteer=volunteer2, turn=turn)
+        response = self.client.get(f'/volunteers/turns/{turn.id}/volunteers')
+        self.assertEqual(response.status_code, 200)
+        res = json.loads(response.content)
+        self.assertEqual(len(res['volunteerTurn']), 2)
+    
+    def test_show_negative_volunteers_in_turn_status_NOT_FOUND(self):
+        response = self.client.get(f'/volunteers/turns/1/volunteers')
+        data = {"message": "Turn not found..."}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json.loads(response.content), data)
+        
+    def test_show_positive_turns_in_volunteer_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        turn2 = Turn.objects.create(date="2023-05-03", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        VolunteerTurn.objects.create(volunteer=volunteer, turn=turn2)
+        response = self.client.get(f'/volunteers/{volunteer.id}/turns')
+        self.assertEqual(response.status_code, 200)
+        res = json.loads(response.content)
+        self.assertEqual(len(res['volunteerTurn']), 2)
+        
+    def test_show_negative_turns_in_volunteer_status_NOT_FOUND(self):
+        response = self.client.get(f'/volunteers/1/turns')
+        data = {"message": "Volunteer not found..."}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json.loads(response.content), data)
+        
+    ################################################## POSTS ####################################################
+    
+    def test_post_positive_volunteer_turns_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        data = JSONRenderer().render({"volunteer_id":volunteer.id, "turn_id":turn.id}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_post_negative_volunteer_turns_status_NOT_FOUND_volunteer(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        data = JSONRenderer().render({"volunteer_id":"2", "turn_id":turn.id}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Volunteer not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_post_negative_volunteer_turns_status_NOT_FOUND_turn(self):
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                        phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                    rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                    truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        data = JSONRenderer().render({"volunteer_id":volunteer.id, "turn_id":"2"}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Turn not found...'}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_post_negative_volunteer_turns_status_DUPLICATE(self):
+        #Creamos los datos
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        #Introducimos el primer dato
+        data = JSONRenderer().render({"volunteer_id":volunteer.id, "turn_id":turn.id}).decode("utf-8")
+        self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        #Introducimos el segundo dato, que es el mismo que el primero
+        data2 = JSONRenderer().render({"volunteer_id":volunteer.id, "turn_id":turn.id}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data2, content_type='application/json')
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {'error': 'Este voluntario ya tiene asignado el mismo turno'}
+        self.assertEqual(response.data, dataMessage)
+        
+    ################################################## PUTS #####################################################
+        
+    def test_update_positive_volunteer_turns_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        edited_turn = Turn.objects.create(date="2023-05-03", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        vt = VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        data = JSONRenderer().render({"volunteer_id":volunteer.id, "turn_id":edited_turn.id}).decode("utf-8")
+        response = self.client.put(f'/volunteers/volunteerTurns/{vt.id}/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+        
+    def test_update_negative_volunteer_turns_status_NOT_FOUND_volunteer(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                    phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        vt = VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        data = JSONRenderer().render({"volunteer_id":"99", "turn_id":turn.id}).decode("utf-8")
+        response = self.client.put(f'/volunteers/volunteerTurns/{vt.id}/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Volunteer not found...'}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_update_negative_volunteer_turns_status_NOT_FOUND_turn(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                    phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        vt = VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        data = JSONRenderer().render({"volunteer_id":volunteer.id, "turn_id":"99"}).decode("utf-8")
+        response = self.client.put(f'/volunteers/volunteerTurns/{vt.id}/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Turn not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_volunteer_turns_status_NOT_FOUND_volunteerTurn(self):
+        data = JSONRenderer().render({"volunteer_id":"1", "turn_id":"1"}).decode("utf-8")
+        response = self.client.put('/volunteers/volunteerTurns/1/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {'message': 'Volunteer Turn not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## DELETES ##################################################
+    
+    def test_delete_positive_turns_status_OK(self):
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00")
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+                            phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                        rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
+                        truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        vt = VolunteerTurn.objects.create(volunteer=volunteer, turn=turn)
+        response = self.client.delete(f'/volunteers/volunteerTurns/{vt.id}/')
+        self.assertEqual(response.status_code, 204)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+        
+    def test_delete_negative_turns_status_NOT_FOUND(self):
+        response = self.client.delete('/volunteers/volunteerTurns/1/')
+        self.assertEqual(response.status_code, 409)
+        dataMessage = {'message': 'Volunteer Turn not found...'}
+        self.assertEqual(response.data, dataMessage) 
