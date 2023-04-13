@@ -166,6 +166,10 @@ class TurnView(views.APIView):
             turn = Turn.objects.get(id=turn_id)
         except Turn.DoesNotExist:
             datos = {'message': "Turn not found..."}
+            return Response(data=datos, status=ST_404)
+
+        if(request.user.id != turn.supervisor.id):
+            datos = {'message': "You do not have permission!"}
             return Response(data=datos, status=ST_409)
 
         if(turn.draft):
@@ -207,8 +211,8 @@ class TurnView(views.APIView):
     def delete(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
-            if(turn.draft):
-                datos = {'message' : "Turn is not in draft mode..."}
+            if(request.user.id != turn.supervisor.id):
+                datos = {'message': "You do not have permission!"}
                 return Response(data=datos, status=ST_409)
             turn.delete()
             datos = {'message': "Success"}
@@ -227,7 +231,11 @@ class TurnDraftView(views.APIView):
         except Turn.DoesNotExist:
             datos = {'message': "Turn not found..."}
             return Response(data=datos, status=ST_409)
-        
+
+        if(request.user.id != turn.supervisor.id):
+            datos = {'message': "You do not have permission!"}
+            return Response(data=datos, status=ST_409) 
+
         try:
             turn.draft = True
             turn.save()
