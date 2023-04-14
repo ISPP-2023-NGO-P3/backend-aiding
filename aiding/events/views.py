@@ -37,6 +37,8 @@ class EventView(CsrfExemptMixin, views.APIView):
             events = list(Event.objects.filter(id=event_id).values())
             if len(events) > 0:
                 event = events[0]
+                event_object = Event.objects.get(id=event_id)
+                event['available_places'] = event_object.available_places()
                 return Response(data=event, status=ST_200)
             else:
                 data = {"message": "Event not found..."}
@@ -206,16 +208,17 @@ class EventBookingView(CsrfExemptMixin, views.APIView):
             data = request.data
             name = data.get('name')
             phone = data.get('phone')
+            last_name = data.get('last_name')
 
-            if not name or not phone:
-                return Response({'error': 'Name and phone are required.'}, status=ST_400)
+            if not name or not last_name or not phone:
+                return Response({'error': 'Name, last_name and phone are required.'}, status=ST_400)
             if ev.bookings.count() >= ev.places:
                 return Response({'error': 'No more places available.'}, status=ST_409)
             if not is_future_event(ev):
                 return Response({'error': 'You can`t book a past event'}, status=ST_400)
             
             booking, created = Booking.objects.get_or_create(
-                event=ev, name=name, phone=phone)
+                event=ev, name=name, phone=phone, last_name=last_name)
             if created:
                 return Response({'success': 'Booking created.'}, status=ST_201)
             else:
