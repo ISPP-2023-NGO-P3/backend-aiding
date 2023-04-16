@@ -17,6 +17,7 @@ from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 from rest_framework.permissions import IsAdminUser, DjangoModelPermissions
 from .validators import validate_nif, validate_datetime
+from base.views import NotificationView
 
 
 class VolunteerManagement(views.APIView):
@@ -238,6 +239,13 @@ class TurnDraftView(views.APIView):
 
         try:
             turn.draft = True
+            volunteersTurn = VolunteerTurn.objects.filter(turn=turn_id)
+            emails = []
+            for volunteerTurn in volunteersTurn:
+                email = volunteerTurn.volunteer.email
+                emails.append(email)
+            NotificationView.send_notification(emails, 'Ha sido asignado al turno '+str(turn.title), 'Se le ha asignado al turno ' +str(turn.title)+ ' el día '+str(turn.date.strftime("%d/%m/%Y"))+' de '+str(turn.startTime.strftime("%H:%M"))+' a '+str(turn.endTime.strftime("%H:%M"))+'.', None)
+            
             turn.save()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_200)
