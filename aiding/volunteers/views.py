@@ -239,6 +239,13 @@ class TurnDraftView(views.APIView):
 
         try:
             turn.draft = True
+            volunteersTurn = VolunteerTurn.objects.filter(turn=turn_id)
+            emails = []
+            for volunteerTurn in volunteersTurn:
+                email = volunteerTurn.volunteer.email
+                emails.append(email)
+            NotificationView.send_notification(emails, 'Ha sido asignado al turno '+str(turn.title), 'Se le ha asignado al turno ' +str(turn.title)+ ' el día '+str(turn.date.strftime("%d/%m/%Y"))+' de '+str(turn.startTime.strftime("%H:%M"))+' a '+str(turn.endTime.strftime("%H:%M"))+'.', None)
+            
             turn.save()
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_200)
@@ -282,7 +289,6 @@ class VolunteerTurnView(views.APIView):
             volunteerTurn=VolunteerTurn(volunteer=volunteer,turn=turn)
             volunteerTurn.clean()
             volunteerTurn.save()
-            NotificationView.send_notification([volunteer.email], 'Ha sido asignado a un turno','Se le ha asignado un turno el día '+str(turn.date.strftime("%d/%m/%Y"))+' de '+str(turn.startTime.strftime("%H:%M"))+' a '+str(turn.endTime.strftime("%H:%M"))+'.', None)
             datos = {'message': "Success"}
             return Response(data=datos, status=ST_201)
         except Volunteer.DoesNotExist:
