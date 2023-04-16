@@ -20,7 +20,7 @@ from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 
-from .models import Event
+from .models import Event, Booking
 
 
 class CsrfExemptMixin:
@@ -37,6 +37,8 @@ class EventView(CsrfExemptMixin, views.APIView):
             events = list(Event.objects.filter(id=event_id).values())
             if len(events) > 0:
                 event = events[0]
+                event_object = Event.objects.get(id=event_id)
+                event['available_places'] = event_object.available_places()
                 return Response(data=event, status=ST_200)
             else:
                 data = {"message": "Event not found..."}
@@ -195,3 +197,33 @@ def is_future_event(event):
         return start_date > now_aware
     else:
         raise ValidationError("Event not found")
+
+#APUNTARSE A UN EVENTO
+
+class EventBookingView(CsrfExemptMixin, views.APIView):
+    def post(self, request,event_id):
+        events = list(Event.objects.filter(id=event_id).values())
+        if len(events) > 0:
+            ev = Event.objects.get(id=event_id)
+            data = request.data
+            name = data.get('name')
+            phone = data.get('phone')
+            last_name = data.get('last_name')
+
+            if not name or not last_name or not phone:
+                return Response({'error': 'Name, last_name and phone are required.'}, status=ST_400)
+            if ev.bookings.count() >= ev.places:
+                return Response({'error': 'No more places available.'}, status=ST_409)
+            if not is_future_event(ev):
+                return Response({'error': 'You can`t book a past event'}, status=ST_400)
+            
+            booking, created = Booking.objects.get_or_create(
+                event=ev, name=name, phone=phone, last_name=last_name)
+            if created:
+                return Response({'success': 'Booking created.'}, status=ST_201)
+            else:
+                return Response({'error': 'Booking already exists.'}, status=ST_409)
+
+        else:
+            data = {"message": "Event not found..."}
+            return Response(data=data, status=ST_404)
