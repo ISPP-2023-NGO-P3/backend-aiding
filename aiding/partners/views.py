@@ -26,6 +26,16 @@ from os import remove
 from rest_framework.permissions import IsAdminUser
 from django.contrib.admin.views.decorators import staff_member_required
 
+class TotalDonation (views.APIView):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get(self, request, donation_id):
+        donation = Donation.objects.filter(id=donation_id).first()
+        datos = {'total_amuont': donation.total_donation()}
+        return Response(data= datos, status=ST_200)
+
 def generate_receipt_xml(partner,donation):
     receipt = ET.Element("Recibo")
     donator = ET.Element("donante")
@@ -63,6 +73,7 @@ def download_receipt_xml(request,partner_id):
         return response
     except Exception:
         return HttpResponse(status=404)
+    
 
 class PartnerManagement(views.APIView):
 
