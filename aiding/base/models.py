@@ -63,7 +63,7 @@ class User(AbstractBaseUser):
 class GroupBaseManager(GroupManager):
     if 'auth_group' in connection.introspection.table_names():
         group1, created = Group.objects.get_or_create(name='supervisor')
-        group2, created = Group.objects.get_or_create(name='capitan')
+        group2, created = Group.objects.get_or_create(name='capitán')
         
         permission1 = Permission.objects.get(codename='add_volunteer')
         permission2 = Permission.objects.get(codename='change_volunteer')
@@ -78,5 +78,5 @@ class GroupBaseManager(GroupManager):
         for group in Group.objects.all():
             if group.name == 'supervisor':
                 group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
-            elif group.name == 'capitan':
+            elif group.name == 'capitán':
                 group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
