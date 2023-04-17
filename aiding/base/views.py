@@ -226,7 +226,6 @@ class NotificationView(views.APIView):
 
     def send_notification(recipients, subject, message, attached_file=None):
 
-        # Asegúrate de que los datos estén en formato Unicode
         recipients = [smart_str(recipients) for recipients in recipients]
         subject = smart_str(subject)
         message = smart_str(message)
@@ -241,8 +240,7 @@ class NotificationView(views.APIView):
             from_email=unidecode(EMAIL_HOST_USER),
             to=recipients,
         )
-        print(unidecode(EMAIL_HOST_USER))
-        print(recipients)
+
         if attached_file:
             file_name = slugify(attached_file.name)
             file_content = ContentFile(attached_file.read().decode('latin-1'))
@@ -250,13 +248,19 @@ class NotificationView(views.APIView):
         try:
             email.send(fail_silently=False)
         except Exception as e:
-            print(f"Error al enviar el correo electrónico: {e}")
+            raise e;
 
     def post(self,request):
         recipients = request.POST.get('recipients').split(' ')
         subject = request.POST.get('subject')
         message = request.POST.get('message')
         _file = request.FILES.get('file')
-        NotificationView.send_notification(recipients, subject, message, _file)
-        datos = {'message': "notification sended..."}
-        return Response(data=datos, status=ST_201)
+        try:
+            NotificationView.send_notification(recipients, subject, message, _file)
+            datos = {'message': "notification sended..."}
+            return Response(data=datos, status=ST_201)
+        
+        except Exception:
+            datos = {'message': "Error..."}
+            return Response(data=datos, status=ST_401)
+        
