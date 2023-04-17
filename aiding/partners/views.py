@@ -26,16 +26,6 @@ from os import remove
 from rest_framework.permissions import IsAdminUser
 from django.contrib.admin.views.decorators import staff_member_required
 
-class TotalDonation (views.APIView):
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-    
-    def get(self, request, donation_id):
-        donation = Donation.objects.filter(id=donation_id).first()
-        datos = {'total_amuont': donation.total_donation()}
-        return Response(data= datos, status=ST_200)
-
 def generate_receipt_xml(partner,donation):
     receipt = ET.Element("Recibo")
     donator = ET.Element("donante")
@@ -73,7 +63,6 @@ def download_receipt_xml(request,partner_id):
         return response
     except Exception:
         return HttpResponse(status=404)
-    
 
 class PartnerManagement(views.APIView):
 
@@ -164,7 +153,7 @@ class PartnerManagement(views.APIView):
             datos = {'message': "Partner not found..."}
         return Response(data=error, status=ST_409)
 
-class DonationView(View):
+class DonationView(views.APIView):
 
     permission_classes = [IsAdminUser]
 
@@ -178,10 +167,10 @@ class DonationView(View):
             donation = list(Donation.objects.filter(partner=partner).values())
             if len(donation) > 0:
                 donation = donation[0]
-            return JsonResponse(donation, safe=False)
+            return Response(data=donation, status=ST_200)
         else:
             donations = list(Donation.objects.values())
-            return JsonResponse(donations, safe=False)
+            return Response(data=donations, status=ST_200)
         
     def post(self, request, partner_id):
         jd = json.loads(request.body)
@@ -192,21 +181,21 @@ class DonationView(View):
             partner = Partners.objects.get(id=partner_id, state='Activo')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
-            return JsonResponse(datos, status=400)
+            return Response(data=datos, status=ST_404)
 
         Donation.objects.create(partner=partner,
                                 amount=amount, periodicity=periodicity)
         datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return Response(data=datos, status=ST_201)
     
     def delete(self, request, partner_id):
         try:
             donation = Donation.objects.get(id=partner_id)
             donation.delete()
-            datos = {'message': "Success"}
+            return Response(data=datos, status=ST_200)
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
-        return JsonResponse(datos)
+            return Response(data=datos, status=ST_404)
 
 
     def put(self, request, partner_id):
@@ -218,28 +207,28 @@ class DonationView(View):
             partner = Partners.objects.get(id=partner_id, state='Activo')
         except Partners.DoesNotExist:
             datos = {'message': "Partner not found or not active"}
-            return JsonResponse(datos, status=400)
+            return Response(data=datos, status=ST_404)
         
         try:
             donation = Donation.objects.filter(partner=partner).latest('start_date')
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
-            return JsonResponse(datos)
+            return Response(data=datos, status=ST_404)
 
         donation.amount = amount
         donation.periodicity = periodicity
         donation.save()
         datos = {'message': "Success"}
-        return JsonResponse(datos)
+        return Response(data=datos, status=ST_201)
 
     
 def get_don_part(request, partner_id):
     partner = Partners.objects.get(id=partner_id, state='Activo')
     donation = Donation.objects.filter(partner=partner)
     datos = list(donation.values())[0]
-    return JsonResponse(datos, safe=False)
+    return Response(data=datos, status=ST_200)
 
-class CommunicationView(View):
+class CommunicationView(views.APIView):
 
     permission_classes = [IsAdminUser]
     
@@ -254,8 +243,10 @@ class CommunicationView(View):
             if communication_id>0:
                 communications = communications.filter(id=communication_id)
             else:
-                return JsonResponse(list(communications.values()), safe = False)
-        return JsonResponse(list(communications.values()), safe = False)
+                datos = list(communications.values())
+                return Response(data=datos, status=ST_200)
+            datos = list(communications.values())
+        return Response(data=datos, status=ST_200)
         
     def post(self, request, partner_id):
         jd = json.loads(request.body)
@@ -269,10 +260,11 @@ class CommunicationView(View):
             Communication.objects.create(partner=part, date=date,
                                             communication_type=communication_type, description =description)
 
-            data = {'message': 'Success'}
+            datos = {'message': 'Success'}
+            return Response(data=datos, status=ST_200)
         else:
-            data = {'message': 'Partner not found'}
-        return JsonResponse(data)
+            datos = {'message': 'Partner not found'}
+            return Response(data=datos, status=ST_404)
         
     def put(self, request, communication_id, partner_id):
         jd = json.loads(request.body)
@@ -288,11 +280,13 @@ class CommunicationView(View):
                 communication.description = jd['description']
                 communication.save()
                 datos = {'message': "Success"}
+                return Response(data=datos, status=ST_201)
             else:
                 datos = {'message': "Partner not found..."}
+                return Response(data=datos, status=ST_404)
         else:
             datos = {'message': "Communication not found..."}
-        return JsonResponse(datos)
+            return Response(data=datos, status=ST_404)
         
     def delete(self, request, communication_id, partner_id):
         communications = Communication.objects.filter(partner=partner_id)
@@ -300,12 +294,14 @@ class CommunicationView(View):
             communications = communications.filter(id=communication_id)
             if len(list(communications.values())) > 0:
                 communications.delete()
-                data = {'message': 'Success'}
+                datos = {'message': 'Success'}
+                return Response(data=datos, status=ST_201)
             else:
-                data = {'message': 'Communication not found...'}
+                datos = {'message': 'Communication not found...'}
+                return Response(data=datos, status=ST_404)
         else:
-            data = {'message': 'Partner not found...'}
-        return JsonResponse(data)
+            datos = {'message': 'Partner not found...'}
+            return Response(data=datos, status=ST_404)
 
 
 class ImportCSVView(views.APIView):
