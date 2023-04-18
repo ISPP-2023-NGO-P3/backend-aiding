@@ -1,6 +1,8 @@
+from django.contrib.auth.models import Group, Permission, GroupManager
 from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.forms import ValidationError
+from django.db import connection
 
 class Contact(models.Model):
     name = models.CharField(max_length=50, null=False)
@@ -10,13 +12,15 @@ class Contact(models.Model):
     subject = models.CharField(max_length=100, null=False)
     message = models.TextField(max_length=1000, null=False)
     isAnswered = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return self.name
-        
+
     def clean(self):
         if not self.phone and not self.email:
-            raise ValidationError("Es necesario un email o un número de teléfono")
+            raise ValidationError(
+                "Es necesario un email o un número de teléfono")
+
 
 class UserManager(BaseUserManager):
     def create_user(self, username, password=None):
@@ -33,11 +37,13 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser):
-    username = models.CharField(blank=False, null=False, max_length=100, unique=True)
+    username = models.CharField(
+        blank=False, null=False, max_length=100, unique=True)
     is_admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
-
+    
+    roles = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
     objects = UserManager()
 
 # is_staff method used exclusively for Django admin panel, use is_admin for regular user permission.
@@ -53,7 +59,24 @@ class User(AbstractBaseUser):
     def has_perm(self, app_label):
         return self.is_admin
 
-class Notification(models.Model):
-    subject = models.CharField(blank=False, null=False, max_length=100)
-    message = models.TextField(blank=False, null=False)
-    targets = models.ManyToManyField(User)
+# Roles a usuarios
+class GroupBaseManager(GroupManager):
+    if 'auth_group' in connection.introspection.table_names():
+        group1, created = Group.objects.get_or_create(name='supervisor')
+        group2, created = Group.objects.get_or_create(name='capitán')
+        
+        permission1 = Permission.objects.get(codename='add_volunteer')
+        permission2 = Permission.objects.get(codename='change_volunteer')
+        permission3 = Permission.objects.get(codename='delete_volunteer')
+        permission4 = Permission.objects.get(codename='view_volunteer')
+
+        permission5 = Permission.objects.get(codename='add_turn')
+        permission6 = Permission.objects.get(codename='change_turn')
+        permission7 = Permission.objects.get(codename='delete_turn')
+        permission8 = Permission.objects.get(codename='view_turn')
+        
+        for group in Group.objects.all():
+            if group.name == 'supervisor':
+                group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)
+            elif group.name == 'capitán':
+                group.permissions.add(permission1, permission2, permission3, permission4, permission5, permission6, permission7, permission8)

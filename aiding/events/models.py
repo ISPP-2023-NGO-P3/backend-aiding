@@ -77,3 +77,24 @@ class Event(models.Model):
             return Response(data=error, status=ST_400)
 
         return latitude, longitude
+
+#APUNTARSE A UN EVENTO
+    def available_places(self):
+        total_places = self.places
+        bookings = self.bookings.count()
+        available_places = total_places - bookings
+
+        return f'{available_places} places available of {total_places} places.'
+
+    def is_full(self):
+        return self.available_places() == 0
+
+class Booking(models.Model):
+    name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('name', 'phone', 'event')
