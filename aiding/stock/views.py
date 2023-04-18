@@ -68,7 +68,7 @@ class ItemView(CsrfExemptMixin, views.APIView):
 
     @method_decorator(staff_member_required)
     def put(self, request, item_id):
-        jd = json.loads(request.body)        
+        jd = json.loads(request.body)
         type_id = jd["type_id"]
         name = jd["name"]
         description = jd["description"]

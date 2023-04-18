@@ -160,7 +160,7 @@ class TurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))   
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def put(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)

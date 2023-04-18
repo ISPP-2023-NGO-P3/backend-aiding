@@ -86,7 +86,7 @@ class PartnerTests(APITestCase):
         dataMessage = {
             "error": "El IBAN no es valido."}
         self.assertEqual(response.data, dataMessage)
-    
+
     def test_create_negative_partner_status_INCORRECT_DNI(self):
         data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "dni":"25604599O", "phone1":"999999997", "phone2":"888888877"
                         ,"birthdate":"2001-11-06", "sex":"men", "email":"persona1@gmail.com", "address":"Mi casa",
@@ -331,7 +331,7 @@ class CommunicationTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="ispp", 
+            username="ispp",
             password="ispp"
         )
         self.client.force_authenticate(user=self.user)

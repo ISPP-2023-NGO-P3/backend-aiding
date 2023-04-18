@@ -79,7 +79,7 @@ class Donation(models.Model):
         periodicity= dict_dates[self.periodicity]
         num_periods = num_days // periodicity
         return amount * num_periods
-    
+
         
 class Communication(models.Model):
     COMMUNICATION_TYPE = (
