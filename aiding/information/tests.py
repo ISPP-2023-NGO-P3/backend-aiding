@@ -1,9 +1,17 @@
 from rest_framework.test import APITestCase
-from .models import Section, Advertisement, Multimedia, Resource
+from .models import Section, Advertisement, Multimedia
 from rest_framework.renderers import JSONRenderer
-
-
+from rest_framework.test import APIClient
+from base.models import User
 class SectionTests(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp",
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
 
     ################################################## GETS ##################################################
 
@@ -102,6 +110,14 @@ class SectionTests(APITestCase):
 
 
 class AdvertisementTests(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
 
     ################################################## GETS ##################################################
 
@@ -231,6 +247,14 @@ class AdvertisementTests(APITestCase):
 
 class MultimediaTests(APITestCase):
 
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
+
     ################################################## GETS ##################################################
 
     def test_list_multimedia_status_OK(self):
@@ -351,6 +375,13 @@ class MultimediaTests(APITestCase):
 
 
 class AdvertisementSectionTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
 
     def test_show_advertisement_section_status_OK(self):
         section = Section.objects.create(name="Seccion 1", active=True)
