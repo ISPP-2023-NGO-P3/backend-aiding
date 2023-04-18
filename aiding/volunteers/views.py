@@ -119,7 +119,7 @@ class TurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def get(self, request, turn_id = 0):
         now = datetime.datetime.now()
         if (turn_id > 0):
@@ -139,7 +139,7 @@ class TurnView(views.APIView):
                 datos = {'message': "turn not found..."}
             return Response(data=datos, status=ST_404)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def post(self,request):
 
         jd = json.loads(request.body)
@@ -161,7 +161,7 @@ class TurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))    
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))    
     def put(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
@@ -208,7 +208,7 @@ class TurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def delete(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
@@ -224,7 +224,7 @@ class TurnView(views.APIView):
             return Response(data=datos, status=ST_409)
 
 class TurnDraftView(views.APIView):
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def put(self, request, turn_id):
 
         try:
@@ -259,7 +259,7 @@ class VolunteerTurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def get(self, request, volunteerTurn_id = 0):
         if (volunteerTurn_id > 0):
             volunteerTurn = list(VolunteerTurn.objects.filter(id=volunteerTurn_id).values())
@@ -278,7 +278,7 @@ class VolunteerTurnView(views.APIView):
                 datos = {'message': "Volunteer turn not found..."}
             return Response(data=datos, status=ST_404)    
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def post(self,request):  
         jd = json.loads(request.body)
         volunteer_id= jd['volunteer_id']
@@ -301,7 +301,7 @@ class VolunteerTurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def put(self,request,volunteerTurn_id): 
         jd = json.loads(request.body)
         volunteer_id= jd['volunteer_id']
@@ -327,7 +327,7 @@ class VolunteerTurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def delete(self, request, volunteerTurn_id):
         try:
             volunteerTurn = VolunteerTurn.objects.get(id=volunteerTurn_id)
@@ -345,7 +345,7 @@ class VolunteerTurnByVolunteerView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def get(self, request, volunteer_id):
         try:
             volunteer= Volunteer.objects.get(id=volunteer_id)
@@ -366,7 +366,7 @@ class VolunteerTurnByTurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitan') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
     def get(self, request, turn_id):
         try:
             turn= Turn.objects.get(id=turn_id)
