@@ -24,7 +24,6 @@ from .validators import *
 import csv
 from os import remove
 from rest_framework.permissions import IsAdminUser
-from django.contrib.admin.views.decorators import staff_member_required
 
 class TotalDonation (views.APIView):
     @method_decorator(csrf_exempt)
@@ -447,8 +446,8 @@ class ImportCSVView(views.APIView):
                             donation=Donation.objects.get(id=donation_id)
                             donation.delete()
                         
-                        for id in partners_id_list:
-                            partner=Partners.objects.get(id=id)
+                        for i in partners_id_list:
+                            partner=Partners.objects.get(id=i)
                             partner.delete()
                         error = {'error': "Ya hay un socio con algún campo igual que uno ya existente, este error se ha dado en la fila "+ str(contador_filas) + " del fichero csv."}
                         return Response(data=error, status=ST_409)

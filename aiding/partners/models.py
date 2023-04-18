@@ -56,7 +56,7 @@ class Donation(models.Model):
     periodicity = models.CharField(choices=[(p.value['name'], p.name) for p in DonationPeriodicity], max_length=20)
     year = models.IntegerField(default=date.today().year, editable=False)
 
-    
+
     def clean(self):
         existing_donation = Donation.objects.filter(partner=self.partner, year=self.year).first()
         if existing_donation and existing_donation.id != self.id:

@@ -24,7 +24,6 @@ from aiding.settings import EMAIL_HOST_USER
 from django.utils.encoding import smart_str
 from unidecode import unidecode
 from .models import Contact, User
-from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate, login
 from django.core.files.base import ContentFile
@@ -214,7 +213,7 @@ class UserView(views.APIView):
                     error = {
                     "error": "Type not found"
                 }
-                return Response(data=error, status=ST_404)    
+                return Response(data=error, status=ST_404)
             else:
                 data = {'message': "User not found..."}
                 return Response(data=data, status=ST_404)

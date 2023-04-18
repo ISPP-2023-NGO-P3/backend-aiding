@@ -84,7 +84,7 @@ class Event(models.Model):
         bookings = self.bookings.count()
         available_places = total_places - bookings
 
-        return f'{available_places} places available of {total_places} places.' 
+        return f'{available_places} places available of {total_places} places.'
 
     def is_full(self):
         return self.available_places() == 0

@@ -6,7 +6,6 @@ from django.forms import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import user_passes_test
-from django.utils import timezone
 from rest_framework.response import Response
 from .models import Volunteer, Turn, VolunteerTurn
 import datetime
@@ -161,7 +160,7 @@ class TurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))    
+    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))   
     def put(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
@@ -235,7 +234,7 @@ class TurnDraftView(views.APIView):
 
         if(request.user.id != turn.supervisor.id):
             datos = {'message': "You do not have permission!"}
-            return Response(data=datos, status=ST_409) 
+            return Response(data=datos, status=ST_409)
 
         try:
             turn.draft = True
@@ -276,10 +275,10 @@ class VolunteerTurnView(views.APIView):
                 return Response(data=volunteerTurn, status=ST_200)
             else:
                 datos = {'message': "Volunteer turn not found..."}
-            return Response(data=datos, status=ST_404)    
+            return Response(data=datos, status=ST_404)
 
     @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
-    def post(self,request):  
+    def post(self,request):
         jd = json.loads(request.body)
         volunteer_id= jd['volunteer_id']
         turn_id= jd['turn_id']
@@ -302,7 +301,7 @@ class VolunteerTurnView(views.APIView):
             return Response(data=error, status=ST_409)
 
     @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
-    def put(self,request,volunteerTurn_id): 
+    def put(self,request,volunteerTurn_id):
         jd = json.loads(request.body)
         volunteer_id= jd['volunteer_id']
         turn_id= jd['turn_id']

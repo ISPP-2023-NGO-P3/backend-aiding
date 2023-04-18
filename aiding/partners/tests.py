@@ -9,7 +9,7 @@ class PartnerTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="ispp", 
+            username="ispp",
             password="ispp"
         )
         self.client.force_authenticate(user=self.user)
@@ -20,7 +20,7 @@ class PartnerTests(APITestCase):
                                 ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
                                 postal_code="41960", township="Gines", province="Sevilla", language="catalan",
                                 iban="ES2114650100722030876288", account_holder="Persona1", state="Inactivo")
-        
+
         response = self.client.get('/partners/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
@@ -522,10 +522,6 @@ class IntegrationTests(APITestCase):
                                 postal_code="41960", township="Gines", province="Sevilla", language="catalan",
                                 iban="ES2114650100722030876288", account_holder="Persona1", state="Inactivo")
 
-        donation_test=Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
-        
-        comunication_test=Communication.objects.create(partner=partner_test,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
-
         partner_data = JSONRenderer().render(
             {"name":"PersonaTest","last_name": "Apellido1", "dni":"25604599X", "phone1":"999999997", "phone2":"888888877"
                         ,"birthdate":"2001-11-06", "sex":"men", "email":"persona1@gmail.com", "address":"Mi casa",
@@ -563,5 +559,3 @@ class IntegrationTests(APITestCase):
         dataMessage = {'message': 'Communication not found...'}
         self.assertEqual(response.data, dataMessage)
     '''
-
-

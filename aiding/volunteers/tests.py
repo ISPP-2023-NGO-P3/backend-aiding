@@ -9,11 +9,11 @@ import json
 import datetime
 
 class VolunteerTests(APITestCase):
-    
+
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="ispp", 
+            username="ispp",
             password="ispp"
         )
         self.client.force_authenticate(user=self.user)
@@ -22,7 +22,7 @@ class VolunteerTests(APITestCase):
 
     def test_list_positive_volunteers_status_OK(self):
         # Para probar que la respuesta HTTP de un código 200, se debe de crear previamente un voluntario
-        Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+        Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla",
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -38,7 +38,7 @@ class VolunteerTests(APITestCase):
         self.assertEqual(response.data, data)
 
     def test_show_positive_volunteers_status_OK(self):
-        volunteer=Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla", 
+        volunteer=Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla",
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -55,7 +55,7 @@ class VolunteerTests(APITestCase):
     ################################################## POSTS ##################################################
 
     def test_create_positive_volunteer_status_CREATED(self):
-        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599X", "place":"Sevilla", 
+        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599X", "place":"Sevilla",
                                  "phone":"888888877" ,"email":"persona1@gmail.com", "state":"Activo", "situation":"necesitaFormacion",
                                 "rol":"Voluntario", "postal_code" : "41001", "observations":"Persona1 es voluntario", "computerKnowledge" :"True",
                                 "truckKnowledge":"False", "warehouseKnowledge":"True","otherKnowledge":"Limpieza"}).decode("utf-8")
@@ -66,7 +66,7 @@ class VolunteerTests(APITestCase):
         self.assertEqual(response.data, dataMessage)
 
     def test_create_negative_volunteer_status_CONFLICT(self):
-        Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla", 
+        Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla",
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -83,7 +83,7 @@ class VolunteerTests(APITestCase):
 
     
     def test_create_negative_volunteer_validate_DNI_incorrect_letter(self):
-        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599L", "place":"Sevilla", 
+        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599L", "place":"Sevilla",
                                  "phone":"888888877" ,"email":"persona1@gmail.com", "state":"Activo", "situation":"necesitaFormacion",
                                 "rol":"Voluntario", "postal_code": "41001", "observations":"Persona1 es voluntario", "computerKnowledge" :"True",
                                 "truckKnowledge":"False", "warehouseKnowledge":"True","otherKnowledge":"Limpieza"}).decode("utf-8")
@@ -94,7 +94,7 @@ class VolunteerTests(APITestCase):
         self.assertEqual(response.data, data)
 
     def test_create_negative_volunteer_validate_DNI_incorrect_format(self):
-        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"2", "place":"Sevilla", 
+        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"2", "place":"Sevilla",
                                  "phone":"888888877" ,"email":"persona1@gmail.com", "state":"Activo", "situation":"necesitaFormacion",
                                 "rol":"Voluntario",  "postal_code" : "41001", "observations":"Persona1 es voluntario", "computerKnowledge" :"True",
                                 "truckKnowledge":"False", "warehouseKnowledge":"True","otherKnowledge":"Limpieza"}).decode("utf-8")
@@ -111,7 +111,7 @@ class VolunteerTests(APITestCase):
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code= "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        data = JSONRenderer().render({"name":"Persona2","last_name": "Apellido2", "num_volunteer":"998", "nif":"25604599X", "place":"Córdoba", 
+        data = JSONRenderer().render({"name":"Persona2","last_name": "Apellido2", "num_volunteer":"998", "nif":"25604599X", "place":"Córdoba",
                                  "phone":"882288877" ,"email":"persona2@gmail.com", "state":"Inactivo", "situation":"Necesita complemento",
                                 "rol":"Supervisor",  "postal_code" : "41001","observations":"Persona2 es supervisor", "computerKnowledge" :"False",
                                 "truckKnowledge":"True", "warehouseKnowledge":"False","otherKnowledge":"Conductor experto"}).decode("utf-8")
@@ -138,7 +138,7 @@ class VolunteerTests(APITestCase):
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001",observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        volunteer = Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="998", nif="97232595A", place="Granada", 
+        volunteer = Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="998", nif="97232595A", place="Granada",
                                  phone="888888899" ,email="persona2@gmail.com", state="Inactivo", situation = "necesitaFormacion",
                                 rol="Voluntario", postal_code = "41001", observations="Persona2 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -158,7 +158,7 @@ class VolunteerTests(APITestCase):
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        data = JSONRenderer().render({"name":"Persona2","last_name": "Apellido2", "num_volunteer":"998", "nif":"25604599L", "place":"Córdoba", 
+        data = JSONRenderer().render({"name":"Persona2","last_name": "Apellido2", "num_volunteer":"998", "nif":"25604599L", "place":"Córdoba",
                                  "phone":"882288877" ,"email":"persona2@gmail.com", "state":"Inactivo", "situation":"Necesita complemento",
                                 "rol":"Supervisor", "postal_code" : "41001", "observations":"Persona2 es supervisor", "computerKnowledge" :"False",
                                 "truckKnowledge":"True", "warehouseKnowledge":"False","otherKnowledge":"Conductor experto"}).decode("utf-8")
@@ -174,7 +174,7 @@ class VolunteerTests(APITestCase):
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario", postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        data = JSONRenderer().render({"name":"Persona2","last_name": "Apellido2", "num_volunteer":"998", "nif":"2", "place":"Córdoba", 
+        data = JSONRenderer().render({"name":"Persona2","last_name": "Apellido2", "num_volunteer":"998", "nif":"2", "place":"Córdoba",
                                  "phone":"882288877" ,"email":"persona2@gmail.com", "state":"Inactivo", "situation":"Necesita complemento",
                                 "rol":"Supervisor", "postal_code":"41001", "observations":"Persona2 es supervisor", "computerKnowledge" :"False",
                                 "truckKnowledge":"True", "warehouseKnowledge":"False","otherKnowledge":"Conductor experto"}).decode("utf-8")
@@ -201,7 +201,7 @@ class VolunteerTests(APITestCase):
         response = self.client.delete('/volunteers/1')
         self.assertEqual(response.status_code, 404)
         dataMessage = {'error': 'Volunteer not found...'}
-        self.assertEqual(response.data, dataMessage) 
+        self.assertEqual(response.data, dataMessage)
 
 class TurnTests(APITestCase):
     
@@ -245,8 +245,7 @@ class TurnTests(APITestCase):
         ################################################## POSTS ##################################################
         
     def test_create_positive_turns_CREATED(self):
-        id = self.user
-        data = JSONRenderer().render({"date":"2023-05-02", 
+        data = JSONRenderer().render({"date":"2023-05-02",
                                       "startTime":"08:00", "endTime":"14:00", "title":"Turno1", "supervisor": "id", "draft":"False"}).decode("utf-8")
         response = self.client.post('/volunteers/turns/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -255,7 +254,7 @@ class TurnTests(APITestCase):
     
     def test_create_negative_turns_wrong_date(self):
         id = self.user
-        data = JSONRenderer().render({"date":"2023-05-02", "startTime":"08:00", "endTime":"7:00", 
+        data = JSONRenderer().render({"date":"2023-05-02", "startTime":"08:00", "endTime":"7:00",
                                       "title":"Turno1", "supervisor": "id", "draft":"True"}).decode("utf-8")
         response = self.client.post('/volunteers/turns/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 409)
@@ -325,7 +324,7 @@ class VolunteerTurnTests(APITestCase):
         
     def test_list_positive_volunteer_turns_status_OK(self):
         turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=self.user, draft=False)
-        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla",
                             phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                         rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
                         truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -363,7 +362,7 @@ class VolunteerTurnTests(APITestCase):
                             phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                         rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
                         truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        volunteer2 = Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="999999998", nif="54181998R", place="Sevilla", 
+        volunteer2 = Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="999999998", nif="54181998R", place="Sevilla",
                     phone="888888879" ,email="persona2@gmail.com", state="Activo", situation = "necesitaFormacion",
                 rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")

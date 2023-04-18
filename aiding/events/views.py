@@ -216,8 +216,8 @@ class EventBookingView(CsrfExemptMixin, views.APIView):
                 return Response({'error': 'No more places available.'}, status=ST_409)
             if not is_future_event(ev):
                 return Response({'error': 'You can`t book a past event'}, status=ST_400)
-            
-            booking, created = Booking.objects.get_or_create(
+
+            created = Booking.objects.get_or_create(
                 event=ev, name=name, phone=phone, last_name=last_name)
             if created:
                 return Response({'success': 'Booking created.'}, status=ST_201)
