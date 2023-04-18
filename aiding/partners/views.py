@@ -161,7 +161,7 @@ class PartnerManagement(views.APIView):
 
         else:
             datos = {'message': "Partner not found..."}
-        return Response(data=error, status=ST_409)
+        return Response(data=datos, status=ST_409)
 
 class DonationView(views.APIView):
 
@@ -171,9 +171,9 @@ class DonationView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, partner_id):
-        partner = Partners.objects.get(id=partner_id)
+    def get(self, request, partner_id=0):
         if partner_id > 0:
+            partner = Partners.objects.get(id=partner_id)
             donation = list(Donation.objects.filter(partner=partner).values())
             if len(donation) > 0:
                 donation = donation[0]
@@ -199,9 +199,11 @@ class DonationView(views.APIView):
         return Response(data=datos, status=ST_201)
     
     def delete(self, request, partner_id):
+        partner = Partners.objects.get(id=partner_id)
         try:
-            donation = Donation.objects.get(id=partner_id)
+            donation = Donation.objects.get(partner=partner)
             donation.delete()
+            datos = {'message': "Success"}
             return Response(data=datos, status=ST_200)
         except Donation.DoesNotExist:
             datos = {'message': "Donation not found..."}
@@ -255,7 +257,7 @@ class CommunicationView(views.APIView):
             else:
                 datos = list(communications.values())
                 return Response(data=datos, status=ST_200)
-            datos = list(communications.values())
+        datos = list(communications.values())
         return Response(data=datos, status=ST_200)
         
     def post(self, request, partner_id):

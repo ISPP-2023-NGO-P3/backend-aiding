@@ -1,10 +1,18 @@
 from rest_framework.test import APITestCase
-from .models import Partners,Donation
+from .models import Partners,Donation,Communication
 from rest_framework.renderers import JSONRenderer
-
+from rest_framework.test import APIClient
+from base.models import User
 
 class PartnerTests(APITestCase):
 
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
     ################################################## GETS ##################################################
 
     def test_list_positive_partners_status_OK(self):
@@ -140,7 +148,7 @@ class PartnerTests(APITestCase):
                         "iban":"ES2114650100722030876288", "account_holder":"Persona1", "state":"Inactivo"}).decode("utf-8")
         response = self.client.put(
             '/partners/1', data=data, content_type='application/json')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 409)
         dataMessage = {'message': 'Partner not found...'}
         self.assertEqual(response.data, dataMessage)
 
@@ -170,43 +178,276 @@ class PartnerTests(APITestCase):
 
 class DonationTests(APITestCase):
 
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
 
     ################################################## GETS ##################################################
 
-    def test_list_positive_partners_donations_OK(self):
+    def test_show_positive_partner_donation_status_OK(self):
         partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
                 ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
                 postal_code="41960", township="Gines", province="Sevilla", language="catalan",
-                iban="ES2114650100722030876288", account_holder="Persona1", state="Inactivo")
-        Donation.objects.create(partner=partner_test,date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
         
         response = self.client.get(f'/partners/{partner_test.id}/donation')
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(str(response.content).__contains__("200.0"), True)
     
-    def test_list_negative_donations_status_NOT_FOUND(self):
+    def test_list_positive_partners_donations_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
+        
+        response = self.client.get('/partners/0/donation')
+
+        self.assertEqual(response.status_code, 200)
+
+    ################################################## POSTS ##################################################
+
+    def test_create_positive_partner_donation_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        data = JSONRenderer().render({"partner_id":"1","start_date": "2001-11-06", "amount":"200.0", "periodicity":"MENSUAL",
+                                       "year":"2020"}).decode("utf-8")
+        response = self.client.post(
+            f'/partners/{partner_test.id}/donation', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+    
+    def test_create_negative_partner_donation_status_NOT_FOUND(self):
+
+        data = JSONRenderer().render({"partner_id":"1","start_date": "2001-11-06", "amount":"200.0", "periodicity":"MENSUAL",
+                                       "year":"2020"}).decode("utf-8")
+        response = self.client.post(
+            '/partners/1/donation', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Partner not found or not active'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_create_negative_partner_donation_status_PARTNER_NOT_ACTIVE(self):
         partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
                 ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
                 postal_code="41960", township="Gines", province="Sevilla", language="catalan",
                 iban="ES2114650100722030876288", account_holder="Persona1", state="Inactivo")
-        response = self.client.get(f'/partners/{partner_test.id}/donation')
-        data = {"message": "donation not found..."}
+        
+        data = JSONRenderer().render({"partner_id":"1","start_date": "2001-11-06", "amount":"200.0", "periodicity":"MENSUAL",
+                                       "year":"2020"}).decode("utf-8")
+        response = self.client.post(
+            f'/partners/{partner_test.id}/donation', data=data, content_type='application/json')
+        
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.data, data)
-'''
-    def test_show_positive_donations_status_OK(self):
-        partner=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
-                        ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
-                        postal_code="41960", township="Gines", province="Sevilla", language="catalan",
-                        iban="ES2114650100722030876288", account_holder="Persona1", state="Inactivo")
-        response = self.client.get(f'/partners/{partner.id}')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["name"], "Persona1")
+        dataMessage = {'message': 'Partner not found or not active'}
+        self.assertEqual(response.data, dataMessage)
 
-    def test_show_negative_donations_status_NOT_FOUND(self):
-        response = self.client.get('/partners/1')
-        data = {"message": "partner not found..."}
+    ################################################## DELETES ##################################################
+    
+    def test_delete_positive_partner_donation_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
+
+        response=self.client.delete(f'/partners/{partner_test.id}/donation', content_type='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_delete_negative_partner_donation_status_NOT_FOUND(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+
+        response=self.client.delete(f'/partners/{partner_test.id}/donation', content_type='application/json')
+
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.data, data)
-'''
+        dataMessage = {'message': 'Donation not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## PUTS ##################################################
+    def test_update_positive_partner_donation_status_OK(self):
+        partner_test = Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
+
+        data = JSONRenderer().render({"partner_id":"1","start_date": "2001-11-06", "amount":"200.0", "periodicity":"MENSUAL",
+                                       "year":"2021"}).decode("utf-8")
+        response = self.client.put(
+            f'/partners/{partner_test.id}/donation', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_partner_donation_status_PARTNER_NOT_FOUND(self):
+        partner_test = Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Inactivo")
+        Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
+
+        data = JSONRenderer().render({"partner_id":"1","start_date": "2001-11-06", "amount":"200.0", "periodicity":"MENSUAL",
+                                       "year":"2021"}).decode("utf-8")
+        response = self.client.put(
+            f'/partners/{partner_test.id}/donation', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Partner not found or not active'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_partner_donation_status_DONATION_NOT_FOUND(self):
+        partner_test = Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+
+        data = JSONRenderer().render({"partner_id":"1","start_date": "2001-11-06", "amount":"200.0", "periodicity":"MENSUAL",
+                                       "year":"2021"}).decode("utf-8")
+        response = self.client.put(
+            f'/partners/{partner_test.id}/donation', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Donation not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+class CommunicationTests(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp", 
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
+
+    ################################################## GETS ##################################################
+
+    def test_list_positive_partners_communications_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        comunication_test=Communication.objects.create(partner=partner_test,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
+        
+        response = self.client.get(f'/partners/0/communication/{comunication_test.id}')
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_show_positive_partner_communication_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        comunication_test=Communication.objects.create(partner=partner_test,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
+
+        response = self.client.get(f'/partners/{partner_test.id}/communication/{comunication_test.id}')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_list_positive_partner_communications_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+
+        response = self.client.get(f'/partners/{partner_test.id}/communication/0')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+
+    ################################################## POSTS ##################################################
+    
+    def test_create_positive_partner_communication_status_OK(self):
+        partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        
+        data = JSONRenderer().render({"partner_id":"1","date": "2001-11-06", "communication_type":"EMAIL", "description":"Comunicacion de pruebas"}).decode("utf-8")
+        response = self.client.post(
+            f'/partners/{partner_test.id}/communication/', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_create_negative_partner_communication_status_NOT_FOUND(self):
+        data = JSONRenderer().render({"partner_id":"1","date": "2001-11-06", "communication_type":"EMAIL", "description":"Comunicacion de pruebas"}).decode("utf-8")
+        response = self.client.post(
+            '/partners/1/communication/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Partner not found'}
+        self.assertEqual(response.data, dataMessage)
+
+    ################################################## PUTS ##################################################
+    def test_update_positive_partner_communication_status_OK(self):
+        partner_test = Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        comunication_test=Communication.objects.create(partner=partner_test,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
+
+        data = JSONRenderer().render({"partner_id":"1","date": "2001-11-06", "communication_type":"EMAIL", "description":"Comunicacion de pruebas"}).decode("utf-8")
+        response = self.client.put(f'/partners/{partner_test.id}/communication/{comunication_test.id}', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_partner_communication_status_PARTNER_NOT_FOUND(self):
+        partner_test = Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+        comunication_test=Communication.objects.create(partner=partner_test,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
+        
+        data = JSONRenderer().render({"partner_id":"1","date": "2001-11-06", "communication_type":"EMAIL", "description":"Comunicacion de pruebas"}).decode("utf-8")
+        response = self.client.put(f'/partners/3/communication/{comunication_test.id}', data=data, content_type='application/json')
+        
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Partner not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+    def test_update_negative_partner_communication_status_DONATION_NOT_FOUND(self):
+        partner_test = Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
+                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
+                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
+                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
+
+        data = JSONRenderer().render({"partner_id":"1","date": "2001-11-06", "communication_type":"EMAIL", "description":"Comunicacion de pruebas"}).decode("utf-8")
+        response = self.client.put(f'/partners/{partner_test.id}/communication/2', data=data, content_type='application/json')
+ 
+        
+        self.assertEqual(response.status_code, 404)
+        dataMessage = {'message': 'Communication not found...'}
+        self.assertEqual(response.data, dataMessage)
+
+
+
+
+
+
+
+
+
+
+
+
+
