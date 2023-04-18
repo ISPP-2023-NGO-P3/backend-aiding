@@ -58,7 +58,7 @@ class PartnerTests(APITestCase):
         self.assertEqual(response.status_code, 201)
         dataMessage = {'message': 'Success'}
         self.assertEqual(response.data, dataMessage)
-    
+
     def test_create_negative_partner_status_CONFLICT(self):
         Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
                 ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
@@ -181,7 +181,7 @@ class DonationTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="ispp", 
+            username="ispp",
             password="ispp"
         )
         self.client.force_authenticate(user=self.user)
@@ -533,29 +533,3 @@ class IntegrationTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         dataMessage = {'message': 'Success'}
         self.assertEqual(response.data, dataMessage)
-    '''
-    def test_negative_show_communication_of_other_partner(self):
-        partner_test1=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
-                                ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
-                                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
-                                iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
-        
-        partner_test2=Partners.objects.create(name="Persona2",last_name= "Apellido2", dni="38608033A", phone1="999999979", phone2="888888000"
-                                ,birthdate="2001-11-06", sex="men", email="persona2@gmail.com", address="Mi casa",
-                                postal_code="41960", township="Gines", province="Sevilla", language="catalan",
-                                iban="ES5420801587748635250719", account_holder="Persona2", state="Activo")
-        
-        comunication_test1=Communication.objects.create(partner=partner_test1,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
-        comunication_test2=Communication.objects.create(partner=partner_test2,date= "2001-11-06", communication_type="EMAIL", description="Comunicacion de pruebas")
-
-        response = self.client.get(f'/partners/{partner_test1.id}/communication/{comunication_test2.id}')
-
-        self.assertEqual(response.status_code, 404)
-        dataMessage = {'message': 'Communication not found...'}
-        self.assertEqual(response.data, dataMessage)
-
-        response = self.client.get(f'/partners/{partner_test2.id}/communication/{comunication_test1.id}')
-        self.assertEqual(response.status_code, 404)
-        dataMessage = {'message': 'Communication not found...'}
-        self.assertEqual(response.data, dataMessage)
-    '''

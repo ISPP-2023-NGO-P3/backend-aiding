@@ -242,11 +242,11 @@ def get_don_part(request, partner_id):
 class CommunicationView(views.APIView):
 
     permission_classes = [IsAdminUser]
-    
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get(self, request, communication_id=0, partner_id = 0):
         communications = Communication.objects
         if partner_id > 0:
@@ -258,7 +258,7 @@ class CommunicationView(views.APIView):
                 return Response(data=datos, status=ST_200)
         datos = list(communications.values())
         return Response(data=datos, status=ST_200)
-        
+
     def post(self, request, partner_id):
         jd = json.loads(request.body)
         part = Partners.objects.filter(id = partner_id)

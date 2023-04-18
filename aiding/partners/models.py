@@ -61,7 +61,7 @@ class Donation(models.Model):
         existing_donation = Donation.objects.filter(partner=self.partner, year=self.year).first()
         if existing_donation and existing_donation.id != self.id:
             raise ValidationError('Ya existe una donación para este socio y año.')
-    
+
     class Meta:
         unique_together = ('partner', 'year')
 
