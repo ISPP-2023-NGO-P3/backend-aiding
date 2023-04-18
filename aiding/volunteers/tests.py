@@ -81,7 +81,7 @@ class VolunteerTests(APITestCase):
             "error": "There is already a volunteer with a field equal to the one you are trying to add, please check the data."}
         self.assertEqual(response.data, dataMessage)
 
-    
+
     def test_create_negative_volunteer_validate_DNI_incorrect_letter(self):
         data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599L", "place":"Sevilla",
                                  "phone":"888888877" ,"email":"persona1@gmail.com", "state":"Activo", "situation":"necesitaFormacion",
@@ -142,7 +142,7 @@ class VolunteerTests(APITestCase):
                                  phone="888888899" ,email="persona2@gmail.com", state="Inactivo", situation = "necesitaFormacion",
                                 rol="Voluntario", postal_code = "41001", observations="Persona2 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599X", "place":"Sevilla", 
+        data = JSONRenderer().render({"name":"Persona1","last_name": "Apellido1", "num_volunteer":"999", "nif":"25604599X", "place":"Sevilla",
                                  "phone":"888888877" ,"email":"persona1@gmail.com", "state":"Activo", "situation":"necesitaFormacion",
                                 "rol":"Voluntario",  "postal_code": "41001", "observations":"Persona1 es voluntario", "computerKnowledge" :"True",
                                 "truckKnowledge":"False", "warehouseKnowledge":"True","otherKnowledge":"Limpieza"}).decode("utf-8")
@@ -154,7 +154,7 @@ class VolunteerTests(APITestCase):
         self.assertEqual(response.data, dataMessage)
 
     def test_update_positive_volunteer_validate_DNI_incorrect_letter(self):
-        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla", 
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla",
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -314,7 +314,7 @@ class VolunteerTurnTests(APITestCase):
         self.client = APIClient()
         role = Group.objects.get_or_create(name="supervisor")[0]
         self.user = User.objects.create(
-            username="ispp", 
+            username="ispp",
             password="ispp",
             roles=role
         )
@@ -358,7 +358,7 @@ class VolunteerTurnTests(APITestCase):
     
     def test_show_positive_volunteers_in_turn_status_OK(self):
         turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=self.user, draft=False)
-        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla",
                             phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                         rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
                         truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")

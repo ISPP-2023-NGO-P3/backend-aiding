@@ -194,7 +194,7 @@ class DonationTests(APITestCase):
                 postal_code="41960", township="Gines", province="Sevilla", language="catalan",
                 iban="ES2114650100722030876288", account_holder="Persona1", state="Activo")
         Donation.objects.create(partner=partner_test,start_date= "2001-11-06", amount="200.0", periodicity="MENSUAL")
-        
+
         response = self.client.get(f'/partners/{partner_test.id}/donation')
 
         self.assertEqual(response.status_code, 200)
@@ -445,7 +445,7 @@ class IntegrationTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="ispp", 
+            username="ispp",
             password="ispp"
         )
         self.client.force_authenticate(user=self.user)

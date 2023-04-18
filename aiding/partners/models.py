@@ -80,7 +80,7 @@ class Donation(models.Model):
         num_periods = num_days // periodicity
         return amount * num_periods
 
-        
+
 class Communication(models.Model):
     COMMUNICATION_TYPE = (
             ('TELEFÓNICA', 'TELEPHONIC'),
