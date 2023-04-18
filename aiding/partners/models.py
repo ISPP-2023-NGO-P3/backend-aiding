@@ -98,4 +98,4 @@ class CSVFile(models.Model):
     file = models.FileField(upload_to="import_partners")
 
 
-    
+

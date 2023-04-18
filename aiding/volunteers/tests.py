@@ -115,7 +115,7 @@ class VolunteerTests(APITestCase):
                                  "phone":"882288877" ,"email":"persona2@gmail.com", "state":"Inactivo", "situation":"Necesita complemento",
                                 "rol":"Supervisor",  "postal_code" : "41001","observations":"Persona2 es supervisor", "computerKnowledge" :"False",
                                 "truckKnowledge":"True", "warehouseKnowledge":"False","otherKnowledge":"Conductor experto"}).decode("utf-8")
-        
+
         response = self.client.put(
             f'/volunteers/{volunteer.id}', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -170,7 +170,7 @@ class VolunteerTests(APITestCase):
         self.assertEqual(response.data, dataMessage)
 
     def test_update_positive_volunteer_validate_DNI_incorrect_format(self):
-        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla", 
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999", nif="25604599X", place="Sevilla",
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario", postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
@@ -382,7 +382,7 @@ class VolunteerTurnTests(APITestCase):
     def test_show_positive_turns_in_volunteer_status_OK(self):
         turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=self.user, draft=False)
         turn2 = Turn.objects.create(date="2023-05-03", startTime="08:00", endTime="14:00", title="Turno2", supervisor=self.user, draft=False)
-        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla", 
+        volunteer = Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="999999997", nif="25604599X", place="Sevilla",
                             phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                         rol="Voluntario", observations="Persona1 es voluntario", computerKnowledge = True,
                         truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")

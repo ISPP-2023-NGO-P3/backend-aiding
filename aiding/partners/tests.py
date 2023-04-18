@@ -198,7 +198,7 @@ class DonationTests(APITestCase):
         response = self.client.get(f'/partners/{partner_test.id}/donation')
 
         self.assertEqual(response.status_code, 200)
-    
+
     def test_list_positive_partners_donations_status_OK(self):
         partner_test=Partners.objects.create(name="Persona1",last_name= "Apellido1", dni="25604599X", phone1="999999997", phone2="888888877"
                 ,birthdate="2001-11-06", sex="men", email="persona1@gmail.com", address="Mi casa",
