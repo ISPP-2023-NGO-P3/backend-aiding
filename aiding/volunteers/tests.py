@@ -517,3 +517,79 @@ class VolunteerTurnTests(APITestCase):
         self.assertEqual(response.status_code, 409)
         dataMessage = {'message': 'Volunteer Turn not found...'}
         self.assertEqual(response.data, dataMessage)  
+
+
+class IntegrationTests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        role = Group.objects.get_or_create(name="supervisor")[0]
+        self.user = User.objects.create(
+            username="ispp",
+            password="ispp",
+            is_admin=True,
+            roles=role
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_1(self):
+        # Creo dos voluntarios, creo dos turnos y los asigno
+
+        volunteer1=Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="1", nif="25604599X", place="Sevilla",
+                                 phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
+                                rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
+                                truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        volunteer2=Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="2", nif="29567219Y", place="Sevilla",
+                                 phone="888888878" ,email="persona2@gmail.com", state="Activo", situation = "necesitaFormacion",
+                                rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
+                                truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
+        
+        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=self.user, draft=False)
+        turn2 = Turn.objects.create(date="2023-05-03", startTime="08:00", endTime="14:00", title="Turno2", supervisor=self.user, draft=False)
+ 
+        data = JSONRenderer().render({"volunteer_id":volunteer1.id, "turn_id":turn.id}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        vt1=VolunteerTurn.objects.get(id=1)
+
+        data = JSONRenderer().render({"volunteer_id":volunteer2.id, "turn_id":turn2.id}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        # Muevo a un voluntario a otro turno
+        data = JSONRenderer().render({"volunteer_id":volunteer1.id, "turn_id":turn2.id}).decode("utf-8")
+        response = self.client.post('/volunteers/volunteerTurns/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        vt3=VolunteerTurn.objects.get(id=3)
+        response = self.client.delete(f'/volunteers/volunteerTurns/{vt1.id}/')
+        self.assertEqual(response.status_code, 204)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        # Borro un turno y compruebo que las asignaciones de voluntarios han desaparecido
+        vts_before=VolunteerTurn.objects.filter(turn=turn2)
+        response = self.client.delete(f'/volunteers/turns/{turn2.id}/')
+        self.assertEqual(response.status_code, 204)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+        vts_after=VolunteerTurn.objects.filter(turn=turn2)
+
+        self.assertEqual(len(vts_before)>len(vts_after),0)
+
+
+        
+
+
+
+
+
+
+
+
