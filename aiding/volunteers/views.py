@@ -53,7 +53,7 @@ class VolunteerManagement(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
         try:
-            Volunteer.objects.create(name=jd['name'],last_name=jd['last_name'],num_volunteer=jd['num_volunteer'],
+            Volunteer.objects.create(name=jd['name'],last_name=jd['last_name'],
                                      nif=jd['nif'],place=jd['place'],phone=jd['phone'],email=jd['email'],
                                      state=jd['state'],situation=jd['situation'],rol=jd['rol'],postal_code=jd['postal_code'],
                                      observations=jd['observations'],computerKnowledge=jd['computerKnowledge'],
@@ -78,7 +78,6 @@ class VolunteerManagement(views.APIView):
             try:
                 volunteer.name = jd['name']
                 volunteer.last_name=jd['last_name']
-                volunteer.num_volunteer=jd['num_volunteer']
                 volunteer.nif=jd['nif']
                 volunteer.place=jd['place']
                 volunteer.phone=jd['phone']
