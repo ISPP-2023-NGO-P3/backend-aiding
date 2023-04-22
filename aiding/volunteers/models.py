@@ -22,7 +22,7 @@ class Volunteer(models.Model):
 
     STATE_CHOICES = (
         ('Activo','Activo'),
-        ('Activo','Inactivo'),
+        ('Inactivo','Inactivo'),
     )
 
     name = models.CharField(max_length=100, blank=False)
