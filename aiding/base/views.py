@@ -156,16 +156,24 @@ class UserView(views.APIView):
                 # return Response(data=error, status=ST_400)
             try:
                 if(roles_id== '' or roles_id== None):
-                    User.objects.create(username=request.POST.get('username'), password=make_password(
-                    request.POST.get('password')), is_admin=jd.get('is_admin', False))
-                    data = {'message': "Success"}
-                    return Response(data=data, status=ST_201)
+                    try:
+                        User.objects.create(username=request.POST.get('username'), password=make_password(
+                        request.POST.get('password')), is_admin=jd.get('is_admin', False))
+                        data = {'message': "Success"}
+                        return Response(data=data, status=ST_201)
+                    except IntegrityError:
+                        data = {'message': 'Username already exists'}
+                        return Response(data=data, status=ST_409)
                 else:
                     role = Group.objects.get(name=jd['roles_id'])
-                    User.objects.create(username=request.POST.get('username'), password=make_password(
-                    request.POST.get('password')), is_admin=jd.get('is_admin', False), roles=role)
-                    data = {'message': "Success"}
-                    return Response(data=data, status=ST_201)
+                    try: 
+                        User.objects.create(username=request.POST.get('username'), password=make_password(
+                        request.POST.get('password')), is_admin=jd.get('is_admin', False), roles=role)
+                        data = {'message': "Success"}
+                        return Response(data=data, status=ST_201)
+                    except IntegrityError:
+                        data = {'message': 'Username already exists'}
+                        return Response(data=data, status=ST_409)
             except Group.DoesNotExist:
                 error = {
                 "error": "Type not found"
@@ -186,33 +194,41 @@ class UserView(views.APIView):
             error = {"error": "Role ID not provided"}
             if len(users) > 0:
                 try:
-                    if(roles_id== '' or roles_id== None):
-                        print('if:',roles_id)
-                        user = User.objects.get(id=user_id)
-                        user.username = jd['username']
-                        new_password = request.data.get('password')
-                        user.password = make_password(new_password)
-                        user.is_admin = jd['is_admin']
-                        user.roles = None
-                        user.save()
-                        data = {'message': "Success"}
-                        return Response(data=data, status=ST_200)
-                    else:
-                        print('else:',roles_id)
-                        role = Group.objects.get(id=jd['roles_id'])
-                        user = User.objects.get(id=user_id)
-                        user.username = jd['username']
-                        new_password = request.data.get('password')
-                        user.password = make_password(new_password)
-                        user.is_admin = jd['is_admin']
-                        user.roles = role
-                        user.save()
-                        data = {'message': "Success"}
-                        return Response(data=data, status=ST_201)
+                    user = User.objects.get(id=user_id)
+                    old_password = request.data.get('password')
+                    print("La contraseña antes del if: ", old_password)
+                    print("Contrasñea hash: ", make_password(old_password))
+                    print("contraseña del usuario: ", user.password)
+                    if user.check_password(old_password):
+                        if(roles_id== '' or roles_id== None):
+                            user = User.objects.get(id=user_id)
+                            user.username = jd['username']
+                            new_password = request.data.get('new_password')
+                            old_password = request.data.get('password')
+                            if user.check_password(old_password) and new_password and new_password != old_password:
+                                user.password = make_password(new_password)
+                            user.is_admin = jd['is_admin']
+                            user.roles = None
+                            user.save()
+                            data = {'message': "Success"}
+                            return Response(data=data, status=ST_200)
+                        else:
+                            role = Group.objects.get(id=jd['roles_id'])
+                            user = User.objects.get(id=user_id)
+                            user.username = jd['username']
+                            new_password = request.data.get('new_password')
+                            old_password = request.data.get('password')
+                            if user.check_password(old_password) and new_password and new_password != old_password:
+                                user.password = make_password(new_password)
+                            user.is_admin = jd['is_admin']
+                            user.roles = role
+                            user.save()
+                            data = {'message': "Success"}
+                            return Response(data=data, status=ST_201)
                 except Group.DoesNotExist:
-                    error = {
-                    "error": "Type not found"
-                }
+                        error = {
+                        "error": "Type not found"
+                    }   
                 return Response(data=error, status=ST_404)
             else:
                 data = {'message': "User not found..."}
