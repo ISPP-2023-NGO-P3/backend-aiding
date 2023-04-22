@@ -12,6 +12,7 @@ import datetime
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
 from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
+from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 from rest_framework.permissions import IsAdminUser, DjangoModelPermissions
@@ -283,7 +284,13 @@ class VolunteerTurnView(views.APIView):
         turn_id= jd['turn_id']
         try:
             volunteer= Volunteer.objects.get(id=volunteer_id)
+            if(volunteer.state == "Inactivo"):
+                datos = {'message': "This volunteer is currently inactive"}
+                return Response(data=datos, status=ST_400)
             turn= Turn.objects.get(id=turn_id)
+            if(turn.draft):
+                datos = {'message': "You cannot edit a turn that isn't in draft mode"}
+                return Response(data=datos, status=ST_400)
             volunteerTurn=VolunteerTurn(volunteer=volunteer,turn=turn)
             volunteerTurn.clean()
             volunteerTurn.save()
