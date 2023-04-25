@@ -12,6 +12,7 @@ import datetime
 from rest_framework.status import HTTP_200_OK as ST_200
 from rest_framework.status import HTTP_201_CREATED as ST_201
 from rest_framework.status import HTTP_204_NO_CONTENT as ST_204
+from rest_framework.status import HTTP_400_BAD_REQUEST as ST_400
 from rest_framework.status import HTTP_404_NOT_FOUND as ST_404
 from rest_framework.status import HTTP_409_CONFLICT as ST_409
 from rest_framework.permissions import IsAdminUser, DjangoModelPermissions
@@ -53,7 +54,7 @@ class VolunteerManagement(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
         try:
-            Volunteer.objects.create(name=jd['name'],last_name=jd['last_name'],num_volunteer=jd['num_volunteer'],
+            Volunteer.objects.create(name=jd['name'],last_name=jd['last_name'],
                                      nif=jd['nif'],place=jd['place'],phone=jd['phone'],email=jd['email'],
                                      state=jd['state'],situation=jd['situation'],rol=jd['rol'],postal_code=jd['postal_code'],
                                      observations=jd['observations'],computerKnowledge=jd['computerKnowledge'],
@@ -78,7 +79,6 @@ class VolunteerManagement(views.APIView):
             try:
                 volunteer.name = jd['name']
                 volunteer.last_name=jd['last_name']
-                volunteer.num_volunteer=jd['num_volunteer']
                 volunteer.nif=jd['nif']
                 volunteer.place=jd['place']
                 volunteer.phone=jd['phone']
@@ -118,7 +118,7 @@ class TurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def get(self, request, turn_id = 0):
         now = datetime.datetime.now()
         if (turn_id > 0):
@@ -138,7 +138,7 @@ class TurnView(views.APIView):
                 datos = {'message': "turn not found..."}
             return Response(data=datos, status=ST_404)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def post(self,request):
 
         jd = json.loads(request.body)
@@ -160,7 +160,7 @@ class TurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def put(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
@@ -207,7 +207,7 @@ class TurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def delete(self, request, turn_id):
         try:
             turn = Turn.objects.get(id=turn_id)
@@ -223,7 +223,7 @@ class TurnView(views.APIView):
             return Response(data=datos, status=ST_409)
 
 class TurnDraftView(views.APIView):
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def put(self, request, turn_id):
 
         try:
@@ -258,7 +258,7 @@ class VolunteerTurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def get(self, request, volunteerTurn_id = 0):
         if (volunteerTurn_id > 0):
             volunteerTurn = list(VolunteerTurn.objects.filter(id=volunteerTurn_id).values())
@@ -277,14 +277,20 @@ class VolunteerTurnView(views.APIView):
                 datos = {'message': "Volunteer turn not found..."}
             return Response(data=datos, status=ST_404)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def post(self,request):
         jd = json.loads(request.body)
         volunteer_id= jd['volunteer_id']
         turn_id= jd['turn_id']
         try:
             volunteer= Volunteer.objects.get(id=volunteer_id)
+            if(volunteer.state == "Inactivo"):
+                datos = {'message': "This volunteer is currently inactive"}
+                return Response(data=datos, status=ST_400)
             turn= Turn.objects.get(id=turn_id)
+            if(turn.draft):
+                datos = {'message': "You cannot edit a turn that isn't in draft mode"}
+                return Response(data=datos, status=ST_400)
             volunteerTurn=VolunteerTurn(volunteer=volunteer,turn=turn)
             volunteerTurn.clean()
             volunteerTurn.save()
@@ -300,7 +306,7 @@ class VolunteerTurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def put(self,request,volunteerTurn_id):
         jd = json.loads(request.body)
         volunteer_id= jd['volunteer_id']
@@ -326,7 +332,7 @@ class VolunteerTurnView(views.APIView):
             error = {'error': e.message}
             return Response(data=error, status=ST_409)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def delete(self, request, volunteerTurn_id):
         try:
             volunteerTurn = VolunteerTurn.objects.get(id=volunteerTurn_id)
@@ -344,7 +350,7 @@ class VolunteerTurnByVolunteerView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def get(self, request, volunteer_id):
         try:
             volunteer= Volunteer.objects.get(id=volunteer_id)
@@ -365,7 +371,7 @@ class VolunteerTurnByTurnView(views.APIView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    @method_decorator(user_passes_test(lambda u: (u.roles.name == 'capitán') | (u.roles.name == 'supervisor')))
+    @method_decorator(user_passes_test(lambda u: u.is_admin or (u.roles and u.roles.name in ['capitán', 'supervisor'])))
     def get(self, request, turn_id):
         try:
             turn= Turn.objects.get(id=turn_id)
