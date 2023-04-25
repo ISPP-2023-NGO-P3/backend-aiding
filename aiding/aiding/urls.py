@@ -26,11 +26,11 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('base/', include('base.urls')),
-    path('information/',include('information.urls')),
+    #path('information/',include('information.urls')),
     path('partners/',include('partners.urls')),
     path('volunteers/',include('volunteers.urls')),
-    path('events/',include('events.urls')),
-    path('stock/',include('stock.urls')),
+    #path('events/',include('events.urls')),
+    #path('stock/',include('stock.urls')),
     path("token/", TokenObtainPairView.as_view(), name="obtain_token"),
     path("token/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
 ]+ static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
