@@ -196,9 +196,6 @@ class UserView(views.APIView):
                 try:
                     user = User.objects.get(id=user_id)
                     old_password = request.data.get('password')
-                    print("La contraseña antes del if: ", old_password)
-                    print("Contrasñea hash: ", make_password(old_password))
-                    print("contraseña del usuario: ", user.password)
                     if user.check_password(old_password):
                         if(roles_id== '' or roles_id== None):
                             user = User.objects.get(id=user_id)
