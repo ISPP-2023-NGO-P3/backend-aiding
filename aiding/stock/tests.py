@@ -215,3 +215,44 @@ class TypeTest(APITestCase):
         self.assertEqual(response.status_code, 404)
         dataMessage = {'message': 'Type not found...'}
         self.assertEqual(response.data, dataMessage)
+
+class IntegrationTests(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp",
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_positive_create_type_and_item(self):
+        #Se crea un tipo
+        type_data = JSONRenderer().render({"name":"tipoPrueba"})
+        response = self.client.post(
+            '/stock/types/', data=type_data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {"message": "Success"}
+        self.assertEqual(response.data, dataMessage)
+
+        type_test=Type.objects.get(name="tipoPrueba")
+
+        #Se crea un item
+        item_data = JSONRenderer().render({"name": "itemPrueba", "description": "descripcionPrueba", "quantity": 1, 
+                                      "type_id": type_test.id})
+        response = self.client.post('/stock/items/', item_data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        item_test = Item.objects.get(name="itemPrueba")
+
+        #Se muestra la lista de tipos
+        response = self.client.get(f'/stock/types/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+        #Se muestra el item creado
+        response = self.client.get(f'/stock/items/{item_test.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.get("name"), "itemPrueba")

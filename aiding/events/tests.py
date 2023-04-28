@@ -271,3 +271,36 @@ class EventTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         dataMessage = {'error': 'You can`t book a past event'}
         self.assertEqual(response.data, dataMessage)
+
+class IntegrationTests(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp",
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_positive_create_event(self):
+        #Se crea un evento
+        data = JSONRenderer().render({"title":"Evento1","description": "Descripcion1", "start_date":"2024-04-21 14:00:00",
+                                      "end_date":"2024-04-22 14:00:00","places":"15","street":"P.º de Cristóbal Colón",
+                                      "number":"12","city":"Sevilla", "userTimezone":"UTC"}).decode("utf-8")
+        response = self.client.post(
+            '/events/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        evento_test = Event.objects.get(title="Evento1")
+
+        #Se muestra la lista de eventos
+        response = self.client.get(f'/events/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+        #Se muestra el evento creado
+        response = self.client.get(f'/events/{evento_test.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.get("title"), "Evento1")
