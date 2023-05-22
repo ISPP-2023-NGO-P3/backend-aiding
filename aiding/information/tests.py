@@ -418,7 +418,7 @@ class IntegrationTests(APITestCase):
         dataMessage = {'message': 'Success'}
         self.assertEqual(response.data, dataMessage)
 
-        section_test=Section.objects.get(id=1)
+        section_test=Section.objects.get(name="Seccion1")
 
         # Se crea la noticia
         data = {"title": "Anuncio 1", "abstract": "Resumen 1", "body": "Descripcion 1",
