@@ -411,7 +411,7 @@ class IntegrationTests(APITestCase):
 
     def test_positive_create_and_update_section_with_advertisement(self):
         # Se crea la sección
-        data = JSONRenderer().render({"name": "Seccion 1"}).decode("utf-8")
+        data = JSONRenderer().render({"name": "Seccion1"}).decode("utf-8")
         response = self.client.post(
             '/information/sections/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 201)
