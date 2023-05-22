@@ -429,7 +429,7 @@ class IntegrationTests(APITestCase):
         dataMessage = {'message': 'Success'}
         self.assertEqual(response.data, dataMessage)
 
-        adevertisement_test=Advertisement.objects.get(id=1)
+        adevertisement_test=Advertisement.objects.get(title="Anuncio 1")
 
         # Comprobamos que la noticia está en la sección
         response = self.client.get(
