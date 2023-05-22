@@ -218,8 +218,8 @@ class TurnTests(APITestCase):
 
     def test_list_positive_turns_status_OK(self):
         supevisor_id = self.user
-        Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=supevisor_id, draft=False)
-        Turn.objects.create(date="2023-05-02", startTime="14:00", endTime="20:00", title="Turno2", supervisor=supevisor_id, draft=False)
+        Turn.objects.create(date="2024-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=supevisor_id, draft=False)
+        Turn.objects.create(date="2024-05-02", startTime="14:00", endTime="20:00", title="Turno2", supervisor=supevisor_id, draft=False)
         response = self.client.get('/volunteers/turns/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json.loads(response.content)), 2)
@@ -245,7 +245,7 @@ class TurnTests(APITestCase):
         ################################################## POSTS ##################################################
         
     def test_create_positive_turns_CREATED(self):
-        data = JSONRenderer().render({"date":"2023-05-02",
+        data = JSONRenderer().render({"date":"2024-05-02",
                                       "startTime":"08:00", "endTime":"14:00", "title":"Turno1", "supervisor": "id", "draft":"False"}).decode("utf-8")
         response = self.client.post('/volunteers/turns/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -254,7 +254,7 @@ class TurnTests(APITestCase):
     
     def test_create_negative_turns_wrong_date(self):
         id = self.user
-        data = JSONRenderer().render({"date":"2023-05-02", "startTime":"08:00", "endTime":"7:00",
+        data = JSONRenderer().render({"date":"2024-05-02", "startTime":"08:00", "endTime":"7:00",
                                       "title":"Turno1", "supervisor": "id", "draft":"True"}).decode("utf-8")
         response = self.client.post('/volunteers/turns/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 409)
@@ -265,8 +265,8 @@ class TurnTests(APITestCase):
         
     def test_update_positive_turns_status_OK(self):
         id =self.user
-        turn = Turn.objects.create(date="2023-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=id, draft=False)
-        data = JSONRenderer().render({"date":"2023-05-02", "startTime":"08:00", "endTime":"14:00",
+        turn = Turn.objects.create(date="2024-05-02", startTime="08:00", endTime="14:00", title="Turno1", supervisor=id, draft=False)
+        data = JSONRenderer().render({"date":"2024-05-02", "startTime":"08:00", "endTime":"14:00",
                                       "title":"Turno1", "supervisor": "id", "draft":"False"}).decode("utf-8")
         response = self.client.put(f'/volunteers/turns/{turn.id}/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -534,11 +534,11 @@ class IntegrationTests(APITestCase):
     def test_1(self):
         # Creo dos voluntarios, creo dos turnos y los asigno
 
-        volunteer1=Volunteer.objects.create(name="Persona1",last_name= "Apellido1", num_volunteer="1", nif="25604599X", place="Sevilla",
+        volunteer1=Volunteer.objects.create(name="Persona1",last_name= "Apellido1", nif="25604599X", place="Sevilla",
                                  phone="888888877" ,email="persona1@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
-        volunteer2=Volunteer.objects.create(name="Persona2",last_name= "Apellido2", num_volunteer="2", nif="29567219Y", place="Sevilla",
+        volunteer2=Volunteer.objects.create(name="Persona2",last_name= "Apellido2", nif="29567219Y", place="Sevilla",
                                  phone="888888878" ,email="persona2@gmail.com", state="Activo", situation = "necesitaFormacion",
                                 rol="Voluntario",  postal_code = "41001", observations="Persona1 es voluntario", computerKnowledge = True,
                                 truckKnowledge=False, warehouseKnowledge="True",otherKnowledge="Limpieza")
