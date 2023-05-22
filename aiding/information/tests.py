@@ -448,7 +448,7 @@ class IntegrationTests(APITestCase):
         self.assertEqual(response.data, dataMessage)
 
         # Comprobamos que la noticia sigue existiendo
-        adevertisement_test=Advertisement.objects.filter(id=1)
+        adevertisement_test=Advertisement.objects.get(title="Anuncio 1")
         self.assertEqual(len(adevertisement_test), 1)
 
         # Borramos la sección 
@@ -458,7 +458,7 @@ class IntegrationTests(APITestCase):
         self.assertEqual(response.data, dataMessage)
 
         # Comprobamos que la noticia ya no existe
-        adevertisement_test=Advertisement.objects.filter(id=1)
+        adevertisement_test=Advertisement.objects.get(title="Anuncio 1")
         self.assertEqual(len(adevertisement_test), 0)
 
     def test_positive_multiple_sections_and_advertisements_interactions(self):
