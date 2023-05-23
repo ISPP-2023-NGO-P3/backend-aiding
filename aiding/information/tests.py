@@ -398,3 +398,101 @@ class AdvertisementSectionTest(APITestCase):
         self.assertEqual(response.status_code, 404)
         dataMessage = {"message": "Section not found"}
         self.assertEqual(response.data, dataMessage)
+
+class IntegrationTests(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="ispp",
+            password="ispp"
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_positive_create_and_update_section_with_advertisement(self):
+        # Se crea la sección
+        data = JSONRenderer().render({"name": "Seccion1"}).decode("utf-8")
+        response = self.client.post(
+            '/information/sections/', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        section_test=Section.objects.get(name="Seccion1")
+
+        # Se crea la noticia
+        data = {"title": "Anuncio 1", "abstract": "Resumen 1", "body": "Descripcion 1",
+                                      "url": "https://www.google.com", "section_id": section_test.id}
+        response = self.client.post(
+            '/information/advertisements/', data=data)
+        self.assertEqual(response.status_code, 201)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        adevertisement_test=Advertisement.objects.get(title="Anuncio 1")
+
+        # Comprobamos que la noticia está en la sección
+        response = self.client.get(
+            f'/information/sections/{section_test.id}/advertisements/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]['title'], "Anuncio 1")
+
+
+        # Cambiamos la sección a inactiva
+        data = JSONRenderer().render(
+            {"name": "Seccion 1", "active": False}).decode("utf-8")
+        response = self.client.put(
+            f'/information/sections/{section_test.id}', data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        # Comprobamos que la noticia sigue existiendo
+        adevertisement_test=Advertisement.objects.filter(title="Anuncio 1")
+        self.assertEqual(len(adevertisement_test), 1)
+
+        # Borramos la sección 
+        response = self.client.delete(f'/information/sections/{section_test.id}')
+        self.assertEqual(response.status_code, 204)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        # Comprobamos que la noticia ya no existe
+        adevertisement_test=Advertisement.objects.filter(title="Anuncio 1")
+        self.assertEqual(len(adevertisement_test), 0)
+
+    def test_positive_multiple_sections_and_advertisements_interactions(self):
+        # Creamos las secciones
+        section1=Section.objects.create(name="Seccion 1",active=True)
+        section2=Section.objects.create(name="Seccion 2",active=True)
+
+        # Creamos una noticia para cada una
+        advertisement1=Advertisement.objects.create(title="Anuncio 1", abstract="Resumen 1", body="Descripcion 1", url="https://www.google.com", section=section1)
+        advertisement2=Advertisement.objects.create(title="Anuncio 2", abstract="Resumen 2", body="Descripcion 2", url="https://www.google.com", section=section2)
+
+        #Cambiamos una noticia de sección
+        data = {"title": "Anuncio 2", "abstract": "Resumen 2", "body": "Descripcion 2",
+                "url": "https://www.google.com", "section_id": section1.id}
+        response = self.client.put(
+            f'/information/advertisements/{advertisement2.id}', data=data)
+        self.assertEqual(response.status_code, 200)
+        dataMessage = {'message': 'Success'}
+        self.assertEqual(response.data, dataMessage)
+
+        # Comprobamos que tanto en la página como en la base de datos los datos son correctos
+        response = self.client.get(
+            f'/information/sections/{section1.id}/advertisements/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+
+        response = self.client.get(
+            f'/information/sections/{section2.id}/advertisements/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+
+        advertisements1=len(Advertisement.objects.filter(section=section1))
+        advertisements2=len(Advertisement.objects.filter(section=section2))
+
+        self.assertEqual(advertisements1,2)
+        self.assertEqual(advertisements2,0)
+
